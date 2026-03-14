@@ -1,8 +1,8 @@
 const { createClient } = require("@libsql/client")
 
 const db = createClient({
-  url:   process.env.TURSO_URL   || "libsql://vocab-db-omi5.aws-ap-south-1.turso.io",
-  authToken: process.env.TURSO_TOKEN || "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NzM1MDk1MTksImlkIjoiMDE5Y2VkM2ItNjEwMS03YzBkLThjMDUtOTViMTE2NjEzYTc0IiwicmlkIjoiYTQxYTg2ZGQtNGRjMi00MDkxLThhZjgtYWJhM2M4ZGEwNjQ5In0.Zx6lfVroaloG4jy4YO2rSSeQCV0mbD9TSHrgPvNJRHp_OyPwEW-2ixEXecd299gYfIrrPRGT8EHbUvTuThxECg"
+  url:       process.env.TURSO_URL   || "libsql://vocab-db-omi5.aws-ap-south-1.turso.io",
+  authToken: process.env.TURSO_TOKEN || ""
 })
 
 async function initDB() {
