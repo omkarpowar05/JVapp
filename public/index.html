@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>語彙 — Japanese Vocab Trainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=DM+Mono:wght@400;500&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+/* ── VARIABLES ── */
+:root {
+  --bg:        #0d0d0f;
+  --surface:   #141417;
+  --surface2:  #1c1c21;
+  --border:    #2a2a32;
+  --accent:    #e8c547;
+  --accent2:   #7c6bff;
+  --red:       #ff4d4d;
+  --green:     #3ddc84;
+  --text:      #e8e8ec;
+  --muted:     #6b6b7a;
+  --font-jp:   'Noto Serif JP', serif;
+  --font-ui:   'Syne', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --radius:    10px;
+  --sidebar:   240px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ══════════════════════════
+   LOGIN SCREEN
+══════════════════════════ */
+#loginScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,107,255,0.15) 0%, transparent 70%),
+    var(--bg);
+  padding: 20px;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 48px 40px;
+  text-align: center;
+  animation: fadeUp 0.5s ease;
+}
+
+.login-kana {
+  font-family: var(--font-jp);
+  font-size: 52px;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.login-title {
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 36px;
+}
+
+.login-box input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-box input:focus { border-color: var(--accent2); }
+
+.btn-admin {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent2);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.btn-admin:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.btn-guest {
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-guest:hover { border-color: var(--accent); color: var(--accent); }
+
+.login-error {
+  color: var(--red);
+  font-size: 13px;
+  margin-bottom: 12px;
+  min-height: 18px;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.login-divider::before, .login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ══════════════════════════
+   APP SHELL
+══════════════════════════ */
+#appShell {
+  display: none;
+  height: 100vh;
+}
+
+#appShell.active {
+  display: flex;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-kana {
+  font-family: var(--font-jp);
+  font-size: 28px;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.sidebar-sub {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.sidebar-section {
+  padding: 16px 12px 8px;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% - 16px);
+  margin: 2px 8px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.nav-btn:hover { background: var(--surface2); color: var(--text); }
+.nav-btn.active { background: var(--surface2); color: var(--accent); }
+
+.nav-btn .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+.sidebar-spacer { flex: 1; }
+
+.sidebar-user {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.user-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.btn-logout {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  transition: all 0.2s;
+}
+.btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* ── MAIN ── */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+  background:
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(232,197,71,0.04) 0%, transparent 60%),
+    var(--bg);
+}
+
+.panel { display: none; }
+.panel.active { display: block; animation: fadeUp 0.3s ease; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── PAGE HEADER ── */
+.page-header {
+  margin-bottom: 28px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+/* ── INPUTS ── */
+input, textarea, select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 11px 14px;
+  border-radius: var(--radius);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 10px;
+}
+
+input:focus, textarea:focus, select:focus { border-color: var(--accent2); }
+select option { background: var(--surface2); }
+textarea { resize: vertical; min-height: 120px; }
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.03em;
+}
+
+.btn:hover { transform: translateY(-1px); opacity: 0.9; }
+.btn:active { transform: translateY(0); }
+
+.btn-primary  { background: var(--accent);  color: #000; }
+.btn-purple   { background: var(--accent2); color: #fff; }
+.btn-danger   { background: var(--red);     color: #fff; }
+.btn-ghost    { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-sm       { padding: 6px 12px; font-size: 12px; }
+
+/* ── INLINE MSG ── */
+.inline-msg {
+  font-size: 13px;
+  padding: 8px 0;
+  min-height: 22px;
+  transition: opacity 0.3s;
+}
+
+/* ── ROW / GRID HELPERS ── */
+.row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* ── TABLE ── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.badge-green { background: rgba(61,220,132,0.15); color: var(--green); }
+.badge-red   { background: rgba(255,77,77,0.15);  color: var(--red); }
+.badge-grey  { background: var(--surface2); color: var(--muted); }
+
+/* ══════════════════════════
+   GAME AREA
+══════════════════════════ */
+.game-setup {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.game-setup select { margin: 0; width: auto; min-width: 160px; }
+
+.game-arena {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 40px 32px;
+  text-align: center;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.big-word {
+  font-family: var(--font-jp);
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  line-height: 1.2;
+  transition: all 0.3s;
+}
+
+.word-hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  font-family: var(--font-mono);
+}
+
+.result-msg {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 16px;
+  min-height: 30px;
+  transition: all 0.2s;
+}
+
+.result-msg.correct { color: var(--green); }
+.result-msg.wrong   { color: var(--red); }
+
+.score-display {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+/* ── MCQ OPTIONS ── */
+.mcq-options {
+  width: 100%;
+  max-width: 480px;
+  margin-top: 4px;
+}
+
+.opt-btn {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 14px 18px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius);
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.opt-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.opt-btn.correct { background: rgba(61,220,132,0.15); border-color: var(--green); color: var(--green); }
+.opt-btn.wrong   { background: rgba(255,77,77,0.12);  border-color: var(--red);   color: var(--red); }
+
+/* ── TOGGLE ── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.toggle-label { font-size: 13px; color: var(--muted); transition: color 0.2s; }
+.toggle-label.on { color: var(--accent); font-weight: 600; }
+
+.toggle-wrap { position: relative; width: 48px; height: 26px; }
+.toggle-wrap input { opacity: 0; width: 0; height: 0; }
+
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.toggle-track::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; top: 3px;
+  background: var(--muted);
+  border-radius: 50%;
+  transition: transform 0.3s, background 0.3s;
+}
+
+.toggle-wrap input:checked + .toggle-track { background: var(--accent2); border-color: var(--accent2); }
+.toggle-wrap input:checked + .toggle-track::before { transform: translateX(22px); background: white; }
+
+/* ── FLASHCARD ── */
+.flashcard-wrap {
+  perspective: 1000px;
+  width: 320px;
+  height: 200px;
+  cursor: pointer;
+  margin: 10px auto 28px;
+}
+
+.flashcard {
+  width: 100%; height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+
+.flashcard.flipped { transform: rotateY(180deg); }
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  backface-visibility: hidden;
+  padding: 20px;
+}
+
+.card-face.back { transform: rotateY(180deg); }
+
+.card-face .card-lang {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.card-face .card-word {
+  font-family: var(--font-jp);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.card-face.back .card-word {
+  font-family: var(--font-ui);
+  font-size: 28px;
+}
+
+.card-tap-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 28px;
+}
+
+.flash-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+/* ── MATCH GAME ── */
+.match-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.match-tile {
+  padding: 14px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-jp);
+}
+
+.match-tile:hover { border-color: var(--accent2); }
+.match-tile.selected { border-color: var(--accent2); background: rgba(124,107,255,0.15); color: var(--accent2); }
+.match-tile.matched  { border-color: var(--green); background: rgba(61,220,132,0.1); color: var(--green); cursor: default; }
+.match-tile.wrong    { border-color: var(--red); background: rgba(255,77,77,0.1); animation: shake 0.3s; }
+.match-tile.en-tile  { font-family: var(--font-ui); font-size: 13px; }
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
+
+.match-timer {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+/* ── TYPING GAME ── */
+.typing-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  max-width: 440px;
+  margin-top: 8px;
+}
+
+.typing-input-row input { margin: 0; }
+
+/* ── STATS BARS ── */
+.accuracy-bar {
+  width: 80px;
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.accuracy-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* ── ADMIN WORD LIST ── */
+.word-list-container {
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--muted);
+}
+
+.empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-kana">語彙</div>
+    <div class="login-title">Japanese Vocabulary Trainer</div>
+
+    <input type="text" id="loginUser" placeholder="Username" autocomplete="off">
+    <input type="password" id="loginPass" placeholder="Password">
+    <div class="login-error" id="loginError"></div>
+    <button class="btn-admin" onclick="doLogin()">Sign in as Admin</button>
+
+    <div class="login-divider">or</div>
+    <button class="btn-guest" onclick="playAsGuest()">▶ Play as Guest</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     APP SHELL
+══════════════════════════════════ -->
+<div id="appShell">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-kana">語彙</div>
+      <div class="sidebar-sub">Vocab Trainer</div>
+    </div>
+
+    <!-- GUEST NAV -->
+    <div id="guestNav">
+      <div class="sidebar-section">Games</div>
+      <button class="nav-btn active" onclick="showPanel('mcq')" id="nav-mcq">
+        <span class="nav-icon">🎯</span> MCQ Quiz
+      </button>
+      <button class="nav-btn" onclick="showPanel('typing')" id="nav-typing">
+        <span class="nav-icon">⌨️</span> Typing Game
+      </button>
+      <button class="nav-btn" onclick="showPanel('flashcard')" id="nav-flashcard">
+        <span class="nav-icon">🃏</span> Flashcards
+      </button>
+      <button class="nav-btn" onclick="showPanel('match')" id="nav-match">
+        <span class="nav-icon">🔗</span> Match Pairs
+      </button>
+    </div>
+
+    <!-- ADMIN NAV -->
+    <div id="adminNav" style="display:none">
+      <div class="sidebar-section">Manage</div>
+      <button class="nav-btn active" onclick="showPanel('adminWords')" id="nav-adminWords">
+        <span class="nav-icon">📚</span> Words
+      </button>
+      <button class="nav-btn" onclick="showPanel('adminStats')" id="nav-adminStats">
+        <span class="nav-icon">📊</span> Word Stats
+      </button>
+      <div class="sidebar-section">Games</div>
+      <button class="nav-btn" onclick="showPanel('mcq')" id="nav-mcq2">
+        <span class="nav-icon">🎯</span> MCQ Quiz
+      </button>
+      <button class="nav-btn" onclick="showPanel('typing')" id="nav-typing2">
+        <span class="nav-icon">⌨️</span> Typing
+      </button>
+      <button class="nav-btn" onclick="showPanel('flashcard')" id="nav-flashcard2">
+        <span class="nav-icon">🃏</span> Flashcards
+      </button>
+      <button class="nav-btn" onclick="showPanel('match')" id="nav-match2">
+        <span class="nav-icon">🔗</span> Match
+      </button>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-user">
+      <div class="user-badge">
+        <div class="user-dot"></div>
+        <span id="userLabel">Guest</span>
+      </div>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- ── MCQ PANEL ── -->
+    <div class="panel active" id="panel-mcq">
+      <div class="page-header">
+        <div class="page-title">MCQ Quiz</div>
+        <div class="page-sub">Multiple choice — test your recognition</div>
+      </div>
+
+      <div class="card">
+        <div class="game-setup">
+          <select id="mcqChapter" onchange="resetMCQ()"></select>
+          <div class="toggle-row" style="margin:0">
+            <span class="toggle-label on" id="mcqLabelJP">🇯🇵 JP → EN</span>
+            <label class="toggle-wrap">
+              <input type="checkbox" id="mcqToggle" onchange="onMcqToggle()">
+              <span class="toggle-track"></span>
+            </label>
+            <span class="toggle-label" id="mcqLabelEN">EN → JP 🔤</span>
+          </div>
+          <button class="btn btn-primary" onclick="startMCQ()">Start</button>
+          <button class="btn btn-ghost"   onclick="endMCQ()">End</button>
+        </div>
+
+        <div class="game-arena">
+          <div class="word-hint" id="mcqHint">Select a chapter and press Start</div>
+          <div class="big-word" id="mcqWord">語彙</div>
+          <div class="mcq-options" id="mcqOptions"></div>
+          <div class="result-msg" id="mcqResult"></div>
+          <div class="score-display" id="mcqScore"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TYPING PANEL ── -->
+    <div class="panel" id="panel-typing">
+      <div class="page-header">
+        <div class="page-title">Typing Game</div>
+        <div class="page-sub">See the Japanese — type the English meaning</div>
+      </div>
+
+      <div class="card">
+        <div class="game-setup">
+          <select id="typingChapter"></select>
+          <button class="btn btn-primary" onclick="startTyping()">Start</button>
+          <button class="btn btn-ghost"   onclick="endTyping()">End</button>
+        </div>
+
+        <div class="game-arena">
+          <div class="word-hint">Type the English meaning and press Enter</div>
+          <div class="big-word" id="typingWord">準備完了</div>
+          <div class="typing-input-row">
+            <input id="typingAnswer" placeholder="English meaning..." autocomplete="off">
+            <button class="btn btn-primary" onclick="checkTyping()">Check</button>
+          </div>
+          <div class="result-msg" id="typingResult"></div>
+          <div class="score-display" id="typingScore"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FLASHCARD PANEL ── -->
+    <div class="panel" id="panel-flashcard">
+      <div class="page-header">
+        <div class="page-title">Flashcards</div>
+        <div class="page-sub">Tap the card to flip — mark yourself honestly</div>
+      </div>
+
+      <div class="card">
+        <div class="game-setup">
+          <select id="flashChapter"></select>
+          <button class="btn btn-primary" onclick="startFlash()">Start</button>
+          <button class="btn btn-ghost"   onclick="endFlash()">End</button>
+        </div>
+
+        <div class="game-arena">
+          <div class="word-hint" id="flashProgress">Select a chapter and press Start</div>
+
+          <div class="flashcard-wrap" onclick="flipCard()" id="flashWrap">
+            <div class="flashcard" id="flashCard">
+              <div class="card-face front">
+                <div class="card-lang">Japanese</div>
+                <div class="card-word" id="flashJP">語彙</div>
+              </div>
+              <div class="card-face back">
+                <div class="card-lang">English</div>
+                <div class="card-word" id="flashEN">vocabulary</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-tap-hint" id="flashTapHint">Tap card to reveal answer</div>
+
+          <div class="flash-actions" id="flashActions" style="display:none">
+            <button class="btn btn-danger" onclick="markFlash(false)">✗ Got it Wrong</button>
+            <button class="btn btn-primary" style="background:var(--green);color:#000" onclick="markFlash(true)">✓ Got it Right</button>
+          </div>
+
+          <div class="score-display" id="flashScore"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MATCH PANEL ── -->
+    <div class="panel" id="panel-match">
+      <div class="page-header">
+        <div class="page-title">Match Pairs</div>
+        <div class="page-sub">Connect each Japanese word to its English meaning</div>
+      </div>
+
+      <div class="card">
+        <div class="game-setup">
+          <select id="matchChapter"></select>
+          <button class="btn btn-primary" onclick="startMatch()">Start</button>
+          <button class="btn btn-ghost"   onclick="resetMatch()">Reset</button>
+        </div>
+
+        <div class="game-arena" id="matchArena">
+          <div class="empty-state">
+            <div class="empty-icon">🔗</div>
+            <p>Select a chapter and press Start</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADMIN WORDS PANEL ── -->
+    <div class="panel" id="panel-adminWords">
+      <div class="page-header">
+        <div class="page-title">Manage Words</div>
+        <div class="page-sub">Add and delete chapters and vocabulary</div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Add Chapter -->
+        <div class="card">
+          <div class="card-title">Add Chapter</div>
+          <input id="newChapterName" placeholder="Chapter name (e.g. Chapter 1)">
+          <button class="btn btn-purple" onclick="adminAddChapter()">Add Chapter</button>
+          <div class="inline-msg" id="chapterMsg"></div>
+        </div>
+
+        <!-- Add Single Word -->
+        <div class="card">
+          <div class="card-title">Add Single Word</div>
+          <select id="adminWordChapter"></select>
+          <input id="adminJP" placeholder="Japanese word">
+          <input id="adminEN" placeholder="English meaning">
+          <button class="btn btn-purple" onclick="adminAddWord()">Add Word</button>
+          <div class="inline-msg" id="wordMsg"></div>
+        </div>
+      </div>
+
+      <!-- Bulk Import -->
+      <div class="card">
+        <div class="card-title">Bulk Import</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+          One word per line in format: <code style="color:var(--accent)">japanese, english</code>
+        </p>
+        <div class="row">
+          <select id="bulkChapter" style="width:auto;min-width:160px;margin:0"></select>
+        </div>
+        <textarea id="bulkText" placeholder="ありがとう, Thank you&#10;日本語, Japanese&#10;食べる, To eat" style="margin-top:10px"></textarea>
+        <button class="btn btn-purple" onclick="adminBulk()">Import Words</button>
+        <div class="inline-msg" id="bulkMsg"></div>
+      </div>
+
+      <!-- Word List -->
+      <div class="card">
+        <div class="card-title">View / Delete Words</div>
+        <div class="row" style="margin-bottom:12px">
+          <select id="viewChapter" onchange="loadWordList()" style="width:auto;min-width:160px;margin:0"></select>
+          <button class="btn btn-ghost btn-sm" onclick="loadWordList()">Refresh</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteChapter()">Delete Chapter</button>
+        </div>
+        <div class="word-list-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Japanese</th>
+                <th>English</th>
+                <th style="width:60px">Delete</th>
+              </tr>
+            </thead>
+            <tbody id="wordListBody">
+              <tr><td colspan="3" style="text-align:center;color:var(--muted);padding:24px">Select a chapter</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADMIN STATS PANEL ── -->
+    <div class="panel" id="panel-adminStats">
+      <div class="page-header">
+        <div class="page-title">Word Stats</div>
+        <div class="page-sub">See which words players struggle with most</div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="margin-bottom:20px">
+          <select id="statsChapter" onchange="loadStats()" style="width:auto;min-width:160px;margin:0"></select>
+          <button class="btn btn-ghost btn-sm" onclick="loadStats()">Refresh</button>
+        </div>
+
+        <div id="statsContent">
+          <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            <p>Select a chapter to view stats</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /appShell -->
+
+<script>
+/* ══════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════ */
+let currentRole = null
+
+// MCQ
+let mcqWords = [], mcqAll = [], mcqCurrent = {}, mcqScore = 0, mcqTotal = 0, mcqRunning = false, mcqEnMode = false
+
+// Typing
+let typWords = [], typCurrent = {}, typScore = 0, typTotal = 0, typRunning = false
+
+// Flashcard
+let flashWords = [], flashCurrent = {}, flashScore = 0, flashTotal = 0, flashRunning = false, flashFlipped = false
+
+// Match
+let matchRunning = false, matchSelected = null, matchPairs = [], matchMatched = 0
+
+/* ══════════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════════ */
+function doLogin() {
+  const u = document.getElementById("loginUser").value.trim()
+  const p = document.getElementById("loginPass").value.trim()
+  if (!u || !p) { setLoginError("Enter username and password"); return }
+
+  fetch("/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: u, password: p })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.role === "admin") {
+      enterApp("admin")
+    } else {
+      setLoginError("Invalid credentials")
+    }
+  })
+  .catch(() => setLoginError("Server error"))
+}
+
+function playAsGuest() { enterApp("guest") }
+
+function enterApp(role) {
+  currentRole = role
+  document.getElementById("loginScreen").style.display = "none"
+  document.getElementById("appShell").classList.add("active")
+  document.getElementById("userLabel").textContent = role === "admin" ? "omkar (admin)" : "Guest"
+
+  if (role === "admin") {
+    document.getElementById("guestNav").style.display = "none"
+    document.getElementById("adminNav").style.display = "block"
+    showPanel("adminWords")
+  } else {
+    showPanel("mcq")
+  }
+
+  loadAllChapters()
+}
+
+function logout() {
+  currentRole = null
+  document.getElementById("appShell").classList.remove("active")
+  document.getElementById("loginScreen").style.display = "flex"
+  document.getElementById("loginUser").value = ""
+  document.getElementById("loginPass").value = ""
+  document.getElementById("loginError").textContent = ""
+}
+
+function setLoginError(msg) {
+  const el = document.getElementById("loginError")
+  el.textContent = msg
+  setTimeout(() => { el.textContent = "" }, 3000)
+}
+
+document.getElementById("loginPass").addEventListener("keypress", e => {
+  if (e.key === "Enter") doLogin()
+})
+
+/* ══════════════════════════════════════════════════
+   PANEL NAVIGATION
+══════════════════════════════════════════════════ */
+function showPanel(id) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"))
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"))
+  document.getElementById("panel-" + id).classList.add("active")
+
+  const navEl = document.getElementById("nav-" + id) || document.getElementById("nav-" + id + "2")
+  if (navEl) navEl.classList.add("active")
+}
+
+/* ══════════════════════════════════════════════════
+   CHAPTER LOADING
+══════════════════════════════════════════════════ */
+function loadAllChapters() {
+  fetch("/chapters")
+    .then(r => r.json())
+    .then(data => {
+      const selects = [
+        "mcqChapter","typingChapter","flashChapter","matchChapter",
+        "adminWordChapter","bulkChapter","viewChapter","statsChapter"
+      ]
+      selects.forEach(id => {
+        const s = document.getElementById(id)
+        if (!s) return
+        const prev = s.value
+        s.innerHTML = ""
+        data.forEach(c => {
+          const op = document.createElement("option")
+          op.value = c.name
+          op.text  = c.name
+          s.appendChild(op)
+        })
+        if (prev) s.value = prev
+      })
+    })
+}
+
+/* ══════════════════════════════════════════════════
+   ADMIN — CHAPTERS & WORDS
+══════════════════════════════════════════════════ */
+function adminAddChapter() {
+  const name = document.getElementById("newChapterName").value.trim()
+  if (!name) return
+
+  fetch("/addChapter", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.error) { showMsg("chapterMsg", "⚠ " + d.error, "var(--red)"); return }
+    document.getElementById("newChapterName").value = ""
+    showMsg("chapterMsg", "✓ Chapter added", "var(--green)")
+    loadAllChapters()
+  })
+}
+
+function adminAddWord() {
+  const chapter  = document.getElementById("adminWordChapter").value
+  const japanese = document.getElementById("adminJP").value.trim()
+  const english  = document.getElementById("adminEN").value.trim()
+  if (!japanese || !english) return
+
+  fetch("/addWord", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chapter, japanese, english })
+  })
+  .then(() => {
+    document.getElementById("adminJP").value = ""
+    document.getElementById("adminEN").value = ""
+    showMsg("wordMsg", "✓ Word saved", "var(--green)")
+    loadWordList()
+  })
+}
+
+function adminBulk() {
+  const chapter = document.getElementById("bulkChapter").value
+  const text    = document.getElementById("bulkText").value
+  const arr     = []
+
+  text.split("\n").forEach(line => {
+    const parts = line.split(",")
+    if (parts.length >= 2) {
+      arr.push({ chapter, jp: parts[0].trim(), en: parts.slice(1).join(",").trim() })
+    }
+  })
+
+  if (!arr.length) { showMsg("bulkMsg", "⚠ No valid lines found", "var(--red)"); return }
+
+  fetch("/bulk", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ words: arr })
+  })
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById("bulkText").value = ""
+    showMsg("bulkMsg", `✓ Imported ${d.count} word(s)`, "var(--green)")
+    loadWordList()
+  })
+}
+
+function loadWordList() {
+  const chapter = document.getElementById("viewChapter").value
+  if (!chapter) return
+
+  fetch("/words/" + encodeURIComponent(chapter))
+    .then(r => r.json())
+    .then(data => {
+      const tbody = document.getElementById("wordListBody")
+      if (!data.length) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:24px">No words in this chapter</td></tr>`
+        return
+      }
+      tbody.innerHTML = data.map(w => `
+        <tr>
+          <td style="font-family:var(--font-jp)">${esc(w.japanese)}</td>
+          <td>${esc(w.english)}</td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="deleteWord(${w.id})">✕</button>
+          </td>
+        </tr>
+      `).join("")
+    })
+}
+
+function deleteWord(id) {
+  fetch("/word/" + id, { method: "DELETE" })
+    .then(() => loadWordList())
+}
+
+function deleteChapter() {
+  const chapter = document.getElementById("viewChapter").value
+  if (!chapter) return
+  if (!confirm(`Delete chapter "${chapter}" and ALL its words?`)) return
+
+  fetch("/chapter/" + encodeURIComponent(chapter), { method: "DELETE" })
+    .then(() => {
+      loadAllChapters()
+      document.getElementById("wordListBody").innerHTML =
+        `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:24px">Chapter deleted</td></tr>`
+    })
+}
+
+/* ══════════════════════════════════════════════════
+   ADMIN — STATS
+══════════════════════════════════════════════════ */
+function loadStats() {
+  const chapter = document.getElementById("statsChapter").value
+  if (!chapter) return
+
+  fetch("/stats/" + encodeURIComponent(chapter))
+    .then(r => r.json())
+    .then(data => {
+      const el = document.getElementById("statsContent")
+
+      if (!data.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><p>No data yet for this chapter</p></div>`
+        return
+      }
+
+      const rows = data.map(w => {
+        const pct    = w.seen > 0 ? Math.round((w.correct / w.seen) * 100) : null
+        const badge  = pct === null ? `<span class="badge badge-grey">unseen</span>`
+                     : pct >= 70   ? `<span class="badge badge-green">${pct}%</span>`
+                                   : `<span class="badge badge-red">${pct}%</span>`
+        const barW   = pct === null ? 0 : pct
+        const barCol = pct === null ? "var(--muted)" : pct >= 70 ? "var(--green)" : "var(--red)"
+
+        return `
+          <tr>
+            <td style="font-family:var(--font-jp);font-size:18px">${esc(w.japanese)}</td>
+            <td>${esc(w.english)}</td>
+            <td style="font-family:var(--font-mono)">${w.seen}</td>
+            <td style="font-family:var(--font-mono);color:var(--green)">${w.correct}</td>
+            <td style="font-family:var(--font-mono);color:var(--red)">${w.wrong}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="accuracy-bar">
+                  <div class="accuracy-fill" style="width:${barW}%;background:${barCol}"></div>
+                </div>
+                ${badge}
+              </div>
+            </td>
+          </tr>
+        `
+      }).join("")
+
+      el.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Japanese</th>
+              <th>English</th>
+              <th>Seen</th>
+              <th>Correct</th>
+              <th>Wrong</th>
+              <th>Accuracy</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `
+    })
+}
+
+/* ══════════════════════════════════════════════════
+   MCQ GAME
+══════════════════════════════════════════════════ */
+function onMcqToggle() {
+  mcqEnMode = document.getElementById("mcqToggle").checked
+  document.getElementById("mcqLabelJP").classList.toggle("on", !mcqEnMode)
+  document.getElementById("mcqLabelEN").classList.toggle("on",  mcqEnMode)
+}
+
+function resetMCQ() {
+  mcqRunning = false
+  document.getElementById("mcqWord").textContent    = "語彙"
+  document.getElementById("mcqOptions").innerHTML   = ""
+  document.getElementById("mcqResult").textContent  = ""
+  document.getElementById("mcqScore").textContent   = ""
+  document.getElementById("mcqHint").textContent    = "Select a chapter and press Start"
+}
+
+function startMCQ() {
+  const chapter = document.getElementById("mcqChapter").value
+  fetch("/words/" + encodeURIComponent(chapter))
+    .then(r => r.json())
+    .then(data => {
+      if (data.length < 4) { alert("Need at least 4 words to run MCQ."); return }
+      mcqWords   = shuffle(data.map(w => ({ id: w.id, jp: w.japanese, en: w.english })))
+      mcqAll     = [...mcqWords]
+      mcqScore   = 0; mcqTotal = 0; mcqRunning = true
+      document.getElementById("mcqResult").textContent = ""
+      document.getElementById("mcqHint").textContent = mcqEnMode ? "English → pick Japanese" : "Japanese → pick English"
+      nextMCQ()
+    })
+}
+
+function nextMCQ() {
+  if (!mcqRunning) return
+  if (!mcqWords.length) { endMCQ(); return }
+
+  mcqCurrent = mcqWords.pop()
+  const questionText = mcqEnMode ? mcqCurrent.en : mcqCurrent.jp
+  document.getElementById("mcqWord").textContent = questionText
+
+  const correct = mcqEnMode ? mcqCurrent.jp : mcqCurrent.en
+  const pool    = mcqAll.filter(w => (mcqEnMode ? w.jp : w.en) !== correct)
+                        .sort(() => Math.random() - 0.5)
+                        .slice(0, 3)
+                        .map(w => mcqEnMode ? w.jp : w.en)
+
+  const options = shuffle([correct, ...pool])
+  const container = document.getElementById("mcqOptions")
+  container.innerHTML = ""
+
+  options.forEach(opt => {
+    const btn = document.createElement("button")
+    btn.className = "opt-btn"
+    btn.textContent = opt
+    if (mcqEnMode) btn.style.fontFamily = "var(--font-jp)"
+    btn.onclick = () => handleMCQ(btn, opt, correct, container)
+    container.appendChild(btn)
+  })
+}
+
+function handleMCQ(clickedBtn, chosen, correct, container) {
+  if (!mcqRunning) return
+  container.querySelectorAll(".opt-btn").forEach(b => b.onclick = null)
+
+  mcqTotal++
+  const isCorrect = chosen === correct
+
+  if (isCorrect) {
+    mcqScore++
+    clickedBtn.classList.add("correct")
+    setResult("mcqResult", "✓ Correct!", true)
+  } else {
+    clickedBtn.classList.add("wrong")
+    container.querySelectorAll(".opt-btn").forEach(b => {
+      if (b.textContent === correct) b.classList.add("correct")
+    })
+    setResult("mcqResult", "✗ " + correct, false)
+  }
+
+  recordAnswer(mcqCurrent.id, isCorrect)
+  document.getElementById("mcqScore").textContent = `Score  ${mcqScore} / ${mcqTotal}`
+  setTimeout(nextMCQ, 1000)
+}
+
+function endMCQ() {
+  mcqRunning = false
+  document.getElementById("mcqWord").textContent   = "Quiz Finished"
+  document.getElementById("mcqOptions").innerHTML  = ""
+  document.getElementById("mcqResult").textContent = `Final: ${mcqScore} / ${mcqTotal}`
+  document.getElementById("mcqResult").className   = "result-msg"
+}
+
+/* ══════════════════════════════════════════════════
+   TYPING GAME
+══════════════════════════════════════════════════ */
+function startTyping() {
+  const chapter = document.getElementById("typingChapter").value
+  fetch("/words/" + encodeURIComponent(chapter))
+    .then(r => r.json())
+    .then(data => {
+      if (!data.length) { alert("No words in this chapter."); return }
+      typWords   = shuffle(data.map(w => ({ id: w.id, jp: w.japanese, en: w.english })))
+      typScore   = 0; typTotal = 0; typRunning = true
+      document.getElementById("typingResult").textContent = ""
+      nextTyping()
+    })
+}
+
+function nextTyping() {
+  if (!typWords.length) { endTyping(); return }
+  typCurrent = typWords.pop()
+  document.getElementById("typingWord").textContent  = typCurrent.jp
+  document.getElementById("typingAnswer").value      = ""
+  document.getElementById("typingAnswer").focus()
+}
+
+function checkTyping() {
+  if (!typRunning) return
+  const ans = document.getElementById("typingAnswer").value.trim().toLowerCase()
+  typTotal++
+  const isCorrect = ans === typCurrent.en.toLowerCase()
+
+  if (isCorrect) {
+    typScore++
+    setResult("typingResult", "✓ Correct!", true)
+  } else {
+    setResult("typingResult", "✗ " + typCurrent.en, false)
+  }
+
+  recordAnswer(typCurrent.id, isCorrect)
+  document.getElementById("typingScore").textContent = `Score  ${typScore} / ${typTotal}`
+  setTimeout(nextTyping, 900)
+}
+
+function endTyping() {
+  typRunning = false
+  document.getElementById("typingWord").textContent   = "Game Finished"
+  document.getElementById("typingResult").textContent = `Final: ${typScore} / ${typTotal}`
+  document.getElementById("typingResult").className   = "result-msg"
+}
+
+document.getElementById("typingAnswer").addEventListener("keypress", e => {
+  if (e.key === "Enter" && typRunning) checkTyping()
+})
+
+/* ══════════════════════════════════════════════════
+   FLASHCARD GAME
+══════════════════════════════════════════════════ */
+function startFlash() {
+  const chapter = document.getElementById("flashChapter").value
+  fetch("/words/" + encodeURIComponent(chapter))
+    .then(r => r.json())
+    .then(data => {
+      if (!data.length) { alert("No words in this chapter."); return }
+      flashWords   = shuffle(data.map(w => ({ id: w.id, jp: w.japanese, en: w.english })))
+      flashScore   = 0; flashTotal = 0; flashRunning = true
+      document.getElementById("flashScore").textContent = ""
+      nextFlash()
+    })
+}
+
+function nextFlash() {
+  if (!flashWords.length) { endFlash(); return }
+  flashCurrent = flashWords.pop()
+  flashFlipped = false
+
+  document.getElementById("flashCard").classList.remove("flipped")
+  document.getElementById("flashJP").textContent     = flashCurrent.jp
+  document.getElementById("flashEN").textContent     = flashCurrent.en
+  document.getElementById("flashActions").style.display = "none"
+  document.getElementById("flashTapHint").style.display = "block"
+
+  const rem = flashWords.length + 1
+  document.getElementById("flashProgress").textContent = `Card ${flashTotal + 1} of ${flashTotal + rem}`
+}
+
+function flipCard() {
+  if (!flashRunning || flashFlipped) return
+  flashFlipped = true
+  document.getElementById("flashCard").classList.add("flipped")
+  document.getElementById("flashActions").style.display = "flex"
+  document.getElementById("flashTapHint").style.display = "none"
+}
+
+function markFlash(correct) {
+  if (!flashRunning) return
+  flashTotal++
+  if (correct) flashScore++
+  recordAnswer(flashCurrent.id, correct)
+  document.getElementById("flashScore").textContent = `Score  ${flashScore} / ${flashTotal}`
+  setTimeout(nextFlash, 300)
+}
+
+function endFlash() {
+  flashRunning = false
+  document.getElementById("flashProgress").textContent  = "All done!"
+  document.getElementById("flashJP").textContent        = "✓"
+  document.getElementById("flashEN").textContent        = `${flashScore} / ${flashTotal}`
+  document.getElementById("flashActions").style.display = "none"
+  document.getElementById("flashTapHint").style.display = "none"
+}
+
+/* ══════════════════════════════════════════════════
+   MATCH PAIRS GAME
+══════════════════════════════════════════════════ */
+function startMatch() {
+  const chapter = document.getElementById("matchChapter").value
+  fetch("/words/" + encodeURIComponent(chapter))
+    .then(r => r.json())
+    .then(data => {
+      if (data.length < 3) { alert("Need at least 3 words to play Match."); return }
+      // Pick 6 random pairs (or less if fewer words)
+      const count = Math.min(6, data.length)
+      matchPairs  = shuffle(data).slice(0, count).map(w => ({ id: w.id, jp: w.japanese, en: w.english }))
+      matchMatched = 0
+      matchSelected = null
+      matchRunning  = true
+      renderMatch()
+    })
+}
+
+function renderMatch() {
+  const jpTiles = matchPairs.map((p, i) => ({ key: "jp-" + i, text: p.jp, pairIdx: i, type: "jp" }))
+  const enTiles = matchPairs.map((p, i) => ({ key: "en-" + i, text: p.en, pairIdx: i, type: "en" }))
+  const all = shuffle([...jpTiles, ...enTiles])
+
+  const arena = document.getElementById("matchArena")
+  arena.innerHTML = `
+    <div style="text-align:center;margin-bottom:16px;font-size:13px;color:var(--muted)">
+      Match each Japanese word with its English meaning
+    </div>
+    <div class="match-grid" id="matchGrid"></div>
+    <div class="result-msg" id="matchResult" style="margin-top:16px"></div>
+    <div class="score-display" id="matchScore"></div>
+  `
+
+  const grid = document.getElementById("matchGrid")
+  all.forEach(tile => {
+    const div = document.createElement("div")
+    div.className    = "match-tile" + (tile.type === "en" ? " en-tile" : "")
+    div.textContent  = tile.text
+    div.dataset.key  = tile.key
+    div.dataset.pair = tile.pairIdx
+    div.dataset.type = tile.type
+    div.onclick      = () => selectMatchTile(div, tile)
+    grid.appendChild(div)
+  })
+}
+
+function selectMatchTile(el, tile) {
+  if (!matchRunning) return
+  if (el.classList.contains("matched")) return
+
+  if (!matchSelected) {
+    matchSelected = { el, tile }
+    el.classList.add("selected")
+    return
+  }
+
+  // Same tile clicked again — deselect
+  if (matchSelected.el === el) {
+    el.classList.remove("selected")
+    matchSelected = null
+    return
+  }
+
+  // Same type — swap selection
+  if (matchSelected.tile.type === tile.type) {
+    matchSelected.el.classList.remove("selected")
+    matchSelected = { el, tile }
+    el.classList.add("selected")
+    return
+  }
+
+  // Different types — check pair
+  const a = matchSelected, b = { el, tile }
+  a.el.classList.remove("selected")
+
+  const isMatch = a.tile.pairIdx === b.tile.pairIdx
+
+  if (isMatch) {
+    a.el.classList.add("matched")
+    b.el.classList.add("matched")
+    a.el.onclick = null
+    b.el.onclick = null
+    matchMatched++
+
+    // Record stat for matched word
+    const word = matchPairs[a.tile.pairIdx]
+    recordAnswer(word.id, true)
+
+    setResult("matchResult", "✓ Match!", true)
+
+    if (matchMatched === matchPairs.length) {
+      setTimeout(() => {
+        document.getElementById("matchResult").textContent = `🎉 All matched! Well done!`
+        document.getElementById("matchResult").className   = "result-msg correct"
+      }, 600)
+    }
+  } else {
+    a.el.classList.add("wrong")
+    b.el.classList.add("wrong")
+    setResult("matchResult", "✗ Not a match", false)
+
+    // Record miss for both words attempted
+    recordAnswer(matchPairs[a.tile.pairIdx].id, false)
+    recordAnswer(matchPairs[b.tile.pairIdx].id, false)
+
+    setTimeout(() => {
+      a.el.classList.remove("wrong")
+      b.el.classList.remove("wrong")
+      document.getElementById("matchResult").textContent = ""
+    }, 700)
+  }
+
+  matchSelected = null
+  document.getElementById("matchScore").textContent = `Matched  ${matchMatched} / ${matchPairs.length}`
+}
+
+function resetMatch() {
+  matchRunning = false
+  matchSelected = null
+  document.getElementById("matchArena").innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">🔗</div>
+      <p>Select a chapter and press Start</p>
+    </div>
+  `
+}
+
+/* ══════════════════════════════════════════════════
+   RECORD ANSWER (silent stat tracking)
+══════════════════════════════════════════════════ */
+function recordAnswer(wordId, correct) {
+  if (!wordId) return
+  fetch("/recordAnswer", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ wordId, correct })
+  }).catch(() => {})
+}
+
+/* ══════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════ */
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+function setResult(id, msg, correct) {
+  const el = document.getElementById(id)
+  el.textContent = msg
+  el.className = "result-msg " + (correct ? "correct" : "wrong")
+}
+
+function showMsg(id, msg, color) {
+  const el = document.getElementById(id)
+  el.textContent  = msg
+  el.style.color  = color
+  setTimeout(() => { el.textContent = "" }, 3000)
+}
+
+function esc(str) {
+  return String(str)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+}
+</script>
+</body>
+</html>

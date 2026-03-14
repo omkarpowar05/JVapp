@@ -1,0 +1,163 @@
+const express = require("express")
+const cors    = require("cors")
+const path    = require("path")
+const { db, initDB } = require("./db")
+
+const app = express()
+
+app.use(cors())
+app.use(express.json())
+app.use(express.static(path.join(__dirname, "../public")))
+
+const ADMIN_USER = "omkar"
+const ADMIN_PASS = "966546"
+
+/* ── ROOT ── */
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/index.html"))
+})
+
+/* ── AUTH ── */
+app.post("/login", (req, res) => {
+  const { username, password } = req.body
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    return res.json({ role: "admin" })
+  }
+  return res.status(401).json({ error: "Invalid credentials" })
+})
+
+/* ── CHAPTERS ── */
+app.get("/chapters", async (req, res) => {
+  try {
+    const result = await db.execute("SELECT * FROM chapters ORDER BY name")
+    res.json(result.rows)
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+app.post("/addChapter", async (req, res) => {
+  const { name } = req.body
+  if (!name || !name.trim()) return res.status(400).json({ error: "Name required" })
+  try {
+    await db.execute({ sql: "INSERT INTO chapters (name) VALUES (?)", args: [name.trim()] })
+    res.json({ status: "ok" })
+  } catch (e) {
+    res.status(409).json({ error: "Chapter already exists" })
+  }
+})
+
+app.delete("/chapter/:name", async (req, res) => {
+  try {
+    await db.execute({ sql: "DELETE FROM words WHERE chapter = ?",  args: [req.params.name] })
+    await db.execute({ sql: "DELETE FROM chapters WHERE name = ?",  args: [req.params.name] })
+    res.json({ status: "deleted" })
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+/* ── WORDS ── */
+app.get("/words/:chapter", async (req, res) => {
+  try {
+    const result = await db.execute({
+      sql:  "SELECT * FROM words WHERE chapter = ? ORDER BY id",
+      args: [req.params.chapter]
+    })
+    res.json(result.rows)
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+app.post("/addWord", async (req, res) => {
+  const { chapter, japanese, english } = req.body
+  if (!chapter || !japanese || !english)
+    return res.status(400).json({ error: "All fields required" })
+  try {
+    const r = await db.execute({
+      sql:  "INSERT INTO words (chapter, japanese, english) VALUES (?, ?, ?)",
+      args: [chapter, japanese.trim(), english.trim()]
+    })
+    await db.execute({
+      sql:  "INSERT OR IGNORE INTO word_stats (word_id) VALUES (?)",
+      args: [Number(r.lastInsertRowid)]
+    })
+    res.json({ status: "saved" })
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+app.delete("/word/:id", async (req, res) => {
+  try {
+    await db.execute({ sql: "DELETE FROM words WHERE id = ?", args: [req.params.id] })
+    res.json({ status: "deleted" })
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+app.post("/bulk", async (req, res) => {
+  const { words } = req.body
+  if (!Array.isArray(words) || !words.length)
+    return res.status(400).json({ error: "No words provided" })
+  try {
+    for (const w of words) {
+      const r = await db.execute({
+        sql:  "INSERT INTO words (chapter, japanese, english) VALUES (?, ?, ?)",
+        args: [w.chapter, w.jp, w.en]
+      })
+      await db.execute({
+        sql:  "INSERT OR IGNORE INTO word_stats (word_id) VALUES (?)",
+        args: [Number(r.lastInsertRowid)]
+      })
+    }
+    res.json({ status: "imported", count: words.length })
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+/* ── STATS ── */
+app.post("/recordAnswer", async (req, res) => {
+  const { wordId, correct } = req.body
+  if (!wordId) return res.status(400).json({ error: "wordId required" })
+  try {
+    await db.execute({
+      sql:  "INSERT OR IGNORE INTO word_stats (word_id) VALUES (?)",
+      args: [wordId]
+    })
+    if (correct) {
+      await db.execute({
+        sql:  "UPDATE word_stats SET seen = seen+1, correct = correct+1 WHERE word_id = ?",
+        args: [wordId]
+      })
+    } else {
+      await db.execute({
+        sql:  "UPDATE word_stats SET seen = seen+1, wrong = wrong+1 WHERE word_id = ?",
+        args: [wordId]
+      })
+    }
+    res.json({ status: "ok" })
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+app.get("/stats/:chapter", async (req, res) => {
+  try {
+    const result = await db.execute({
+      sql: `
+        SELECT
+          w.id,
+          w.japanese,
+          w.english,
+          COALESCE(s.seen,    0) AS seen,
+          COALESCE(s.correct, 0) AS correct,
+          COALESCE(s.wrong,   0) AS wrong
+        FROM words w
+        LEFT JOIN word_stats s ON s.word_id = w.id
+        WHERE w.chapter = ?
+        ORDER BY
+          CASE WHEN COALESCE(s.seen,0) = 0 THEN 1 ELSE 0 END,
+          (CAST(COALESCE(s.correct,0) AS REAL) / COALESCE(s.seen,1)) ASC
+      `,
+      args: [req.params.chapter]
+    })
+    res.json(result.rows)
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+/* ── START ── */
+const PORT = process.env.PORT || 3000
+app.listen(PORT, async () => {
+  await initDB()
+  console.log(`✅ Server running → http://localhost:${PORT}`)
+})
