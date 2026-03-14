@@ -38,10 +38,15 @@ app.post("/addChapter", async (req, res) => {
   const { name } = req.body
   if (!name || !name.trim()) return res.status(400).json({ error: "Name required" })
   try {
+    const existing = await db.execute({ sql: "SELECT id FROM chapters WHERE name = ?", args: [name.trim()] })
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ error: "Chapter already exists" })
+    }
     await db.execute({ sql: "INSERT INTO chapters (name) VALUES (?)", args: [name.trim()] })
     res.json({ status: "ok" })
   } catch (e) {
-    res.status(409).json({ error: "Chapter already exists" })
+    console.error("addChapter error:", e.message)
+    res.status(500).json({ error: e.message })
   }
 })
 
