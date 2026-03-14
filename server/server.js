@@ -26,6 +26,16 @@ app.post("/login", (req, res) => {
   return res.status(401).json({ error: "Invalid credentials" })
 })
 
+/* ── DEBUG ── */
+app.get("/debug/chapters", async (req, res) => {
+  try {
+    const result = await db.execute("SELECT * FROM chapters")
+    res.json({ rows: result.rows, count: result.rows.length })
+  } catch (e) {
+    res.status(500).json({ error: e.message, stack: e.stack })
+  }
+})
+
 /* ── CHAPTERS ── */
 app.get("/chapters", async (req, res) => {
   try {
