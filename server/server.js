@@ -196,7 +196,7 @@ Reply ONLY in this exact JSON format with no extra text:
         "Authorization": "Bearer " + GROQ_KEY
       },
       body: JSON.stringify({
-        model: "llama3-8b-8192",
+        model: "llama-3.1-8b-instant",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
         max_tokens: 200
@@ -250,7 +250,7 @@ Evaluate the translation and reply ONLY in this exact JSON format with no extra 
         "Authorization": "Bearer " + GROQ_KEY
       },
       body: JSON.stringify({
-        model: "llama3-8b-8192",
+        model: "llama-3.1-8b-instant",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.3,
         max_tokens: 300
