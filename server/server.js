@@ -170,6 +170,111 @@ app.get("/stats/:chapter", async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
+
+/* ── AI SENSEI — GENERATE SENTENCE ── */
+app.post("/ai/generate", async (req, res) => {
+  const { words } = req.body
+  if (!words || !words.length) return res.status(400).json({ error: "No words provided" })
+
+  const GROQ_KEY = process.env.GROQ_API_KEY || "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"
+
+  // Pick 3-5 random words to use in sentence
+  const picked = words.sort(() => Math.random() - 0.5).slice(0, Math.min(4, words.length))
+  const wordList = picked.map(w => `${w.jp} (${w.en})`).join(", ")
+
+  const prompt = `You are a Japanese language teacher for beginners learning from Minna no Nihongo.
+Generate one simple Japanese sentence using some of these vocabulary words: ${wordList}
+The sentence should be beginner level, using hiragana/katakana (no kanji).
+Reply ONLY in this exact JSON format with no extra text:
+{"sentence": "japanese sentence here", "reading": "hiragana reading if needed", "hint": "one short grammar tip"}`
+
+  try {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + GROQ_KEY
+      },
+      body: JSON.stringify({
+        model: "llama3-8b-8192",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: 200
+      })
+    })
+
+    const data = await response.json()
+    if (!response.ok) {
+      console.error("Groq error:", data)
+      return res.status(500).json({ error: "AI error: " + (data.error?.message || "unknown") })
+    }
+
+    const text = data.choices[0].message.content.trim()
+    // Parse JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) return res.status(500).json({ error: "Could not parse AI response" })
+    const parsed = JSON.parse(jsonMatch[0])
+    res.json(parsed)
+
+  } catch (e) {
+    console.error("AI generate error:", e.message)
+    res.status(500).json({ error: e.message })
+  }
+})
+
+/* ── AI SENSEI — CHECK TRANSLATION ── */
+app.post("/ai/check", async (req, res) => {
+  const { sentence, userTranslation } = req.body
+  if (!sentence || !userTranslation) return res.status(400).json({ error: "Missing fields" })
+
+  const GROQ_KEY = process.env.GROQ_API_KEY || "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"
+
+  const prompt = `You are a Japanese language teacher checking a student's translation.
+Japanese sentence: "${sentence}"
+Student's translation: "${userTranslation}"
+
+Evaluate the translation and reply ONLY in this exact JSON format with no extra text:
+{
+  "score": <number 0-10>,
+  "correct": <true or false>,
+  "correct_translation": "the best English translation",
+  "feedback": "short encouraging feedback in 1-2 sentences",
+  "tip": "one short grammar or vocabulary tip about this sentence"
+}`
+
+  try {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + GROQ_KEY
+      },
+      body: JSON.stringify({
+        model: "llama3-8b-8192",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+        max_tokens: 300
+      })
+    })
+
+    const data = await response.json()
+    if (!response.ok) {
+      console.error("Groq error:", data)
+      return res.status(500).json({ error: "AI error: " + (data.error?.message || "unknown") })
+    }
+
+    const text = data.choices[0].message.content.trim()
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) return res.status(500).json({ error: "Could not parse AI response" })
+    const parsed = JSON.parse(jsonMatch[0])
+    res.json(parsed)
+
+  } catch (e) {
+    console.error("AI check error:", e.message)
+    res.status(500).json({ error: e.message })
+  }
+})
+
 /* ── START ── */
 const PORT = process.env.PORT || 3000
 app.listen(PORT, async () => {
