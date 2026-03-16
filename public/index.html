@@ -815,6 +815,230 @@ textarea { resize: vertical; min-height: 120px; }
   .match-tile { font-size: 12px; padding: 10px 6px; min-height: 48px; }
 }
 
+
+/* ══════════════════════════
+   RAPID FIRE GAME
+══════════════════════════ */
+.rf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.rf-timer {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 60px;
+  text-align: center;
+  transition: color 0.3s;
+}
+
+.rf-timer.danger { color: var(--red); animation: pulse 0.5s infinite alternate; }
+
+@keyframes pulse {
+  from { opacity: 1; }
+  to   { opacity: 0.4; }
+}
+
+.rf-score {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.rf-combo {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 80px;
+  text-align: right;
+}
+
+.rf-progress {
+  width: 100%;
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.rf-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 1s linear;
+}
+
+.rf-word-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.rf-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  animation: slideIn 0.25s ease;
+  transition: all 0.2s;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.rf-row.answered-correct {
+  border-color: var(--green);
+  background: rgba(61,220,132,0.08);
+  animation: correctFlash 0.3s ease;
+}
+
+.rf-row.answered-wrong {
+  border-color: var(--red);
+  background: rgba(255,77,77,0.08);
+  animation: wrongShake 0.3s ease;
+}
+
+@keyframes correctFlash {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+@keyframes wrongShake {
+  0%,100% { transform: translateX(0); }
+  25%     { transform: translateX(-6px); }
+  75%     { transform: translateX(6px); }
+}
+
+.rf-jp {
+  font-family: var(--font-jp);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.rf-options {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.rf-opt {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.rf-opt:hover { border-color: var(--accent2); color: var(--accent2); }
+.rf-opt.correct { background: rgba(61,220,132,0.15); border-color: var(--green); color: var(--green); }
+.rf-opt.wrong   { background: rgba(255,77,77,0.12);  border-color: var(--red);   color: var(--red); }
+
+.rf-check { font-size: 18px; min-width: 24px; text-align: center; }
+
+.rf-result-screen {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.rf-result-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.rf-result-sub {
+  font-size: 16px;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+.rf-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-width: 400px;
+  margin: 0 auto 28px;
+}
+
+.rf-stat-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.rf-stat-num {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.rf-stat-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.diff-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.diff-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  border-radius: 8px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.diff-btn:hover { border-color: var(--accent); color: var(--accent); }
+.diff-btn.active { border-color: var(--accent); background: rgba(232,197,71,0.1); color: var(--accent); }
+
+@media (max-width: 768px) {
+  .rf-row { flex-direction: column; align-items: flex-start; }
+  .rf-jp  { min-width: unset; }
+  .rf-options { width: 100%; }
+  .rf-stats-grid { grid-template-columns: repeat(3,1fr); }
+}
+
 </style>
 </head>
 <body>
@@ -866,6 +1090,9 @@ textarea { resize: vertical; min-height: 120px; }
       <button class="nav-btn" onclick="showPanel('match')" id="nav-match">
         <span class="nav-icon">🔗</span> Match Pairs
       </button>
+      <button class="nav-btn" onclick="showPanel('rapid')" id="nav-rapid">
+        <span class="nav-icon">⚡</span> Rapid Fire
+      </button>
     </div>
 
     <!-- ADMIN NAV -->
@@ -889,6 +1116,9 @@ textarea { resize: vertical; min-height: 120px; }
       </button>
       <button class="nav-btn" onclick="showPanel('match')" id="nav-match2">
         <span class="nav-icon">🔗</span> Match
+      </button>
+      <button class="nav-btn" onclick="showPanel('rapid')" id="nav-rapid2">
+        <span class="nav-icon">⚡</span> Rapid Fire
       </button>
     </div>
 
@@ -1025,6 +1255,35 @@ textarea { resize: vertical; min-height: 120px; }
           <div class="empty-state">
             <div class="empty-icon">🔗</div>
             <p>Select a chapter and press Start</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── RAPID FIRE PANEL ── -->
+    <div class="panel" id="panel-rapid">
+      <div class="page-header">
+        <div class="page-title">Rapid Fire ⚡</div>
+        <div class="page-sub">Answer as many as you can before time runs out</div>
+      </div>
+
+      <div class="card">
+        <div class="game-setup" style="margin-bottom:16px">
+          <select id="rapidChapter"></select>
+          <div class="diff-btns">
+            <button class="diff-btn active" id="diff-easy"   onclick="setDiff('easy')">😊 Easy</button>
+            <button class="diff-btn"        id="diff-normal" onclick="setDiff('normal')">😤 Normal</button>
+            <button class="diff-btn"        id="diff-hard"   onclick="setDiff('hard')">💀 Hard</button>
+          </div>
+          <button class="btn btn-primary" onclick="startRapid()">Start</button>
+          <button class="btn btn-ghost"   onclick="endRapid()">End</button>
+        </div>
+
+        <div id="rapidArena">
+          <div class="empty-state">
+            <div class="empty-icon">⚡</div>
+            <p>Select a chapter, choose difficulty and press Start</p>
           </div>
         </div>
       </div>
@@ -1221,7 +1480,7 @@ function loadAllChapters() {
     .then(r => r.json())
     .then(data => {
       const selects = [
-        "mcqChapter","typingChapter","flashChapter","matchChapter",
+        "mcqChapter","typingChapter","flashChapter","matchChapter","rapidChapter",
         "adminWordChapter","bulkChapter","viewChapter","statsChapter"
       ]
       selects.forEach(id => {
@@ -1785,6 +2044,231 @@ function esc(str) {
     .replace(/</g,"&lt;")
     .replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;")
+}
+
+
+/* ══════════════════════════════════════════════════
+   RAPID FIRE GAME
+══════════════════════════════════════════════════ */
+let rfWords       = []
+let rfAll         = []
+let rfRunning     = false
+let rfScore       = 0
+let rfCorrect     = 0
+let rfWrong       = 0
+let rfCombo       = 0
+let rfMaxCombo    = 0
+let rfTimer       = null
+let rfTimeLeft    = 45
+let rfDiff        = 'normal'
+let rfAnswered    = new Set()
+
+const RF_DIFF = {
+  easy:   { time: 60, rows: 3 },
+  normal: { time: 45, rows: 5 },
+  hard:   { time: 30, rows: 8 }
+}
+
+function setDiff(d) {
+  rfDiff = d
+  document.querySelectorAll(".diff-btn").forEach(b => b.classList.remove("active"))
+  document.getElementById("diff-" + d).classList.add("active")
+}
+
+function startRapid() {
+  const chapter = document.getElementById("rapidChapter").value
+  fetch("/words/" + encodeURIComponent(chapter))
+    .then(r => r.json())
+    .then(data => {
+      if (data.length < 4) { alert("Need at least 4 words to play Rapid Fire."); return }
+      rfAll     = data.map(w => ({ id: w.id, jp: w.japanese, en: w.english }))
+      rfWords   = shuffle([...rfAll])
+      rfScore   = 0
+      rfCorrect = 0
+      rfWrong   = 0
+      rfCombo   = 0
+      rfMaxCombo= 0
+      rfAnswered= new Set()
+      rfRunning = true
+      rfTimeLeft= RF_DIFF[rfDiff].time
+
+      renderRapidArena()
+      startRapidTimer()
+    })
+}
+
+function startRapidTimer() {
+  clearInterval(rfTimer)
+  rfTimer = setInterval(() => {
+    rfTimeLeft--
+    const timerEl = document.getElementById("rfTimer")
+    if (timerEl) {
+      timerEl.textContent = rfTimeLeft
+      if (rfTimeLeft <= 10) timerEl.classList.add("danger")
+      else timerEl.classList.remove("danger")
+
+      // Update progress bar
+      const fill = document.getElementById("rfProgressFill")
+      if (fill) {
+        const pct = (rfTimeLeft / RF_DIFF[rfDiff].time) * 100
+        fill.style.width = pct + "%"
+        fill.style.background = rfTimeLeft <= 10 ? "var(--red)" : "var(--accent)"
+      }
+    }
+    if (rfTimeLeft <= 0) endRapid()
+  }, 1000)
+}
+
+function renderRapidArena() {
+  const arena = document.getElementById("rapidArena")
+  const rows  = RF_DIFF[rfDiff].rows
+
+  // Get words not yet answered, fill up to `rows` slots
+  const active = rfWords.filter(w => !rfAnswered.has(w.id)).slice(0, rows)
+
+  if (active.length === 0 && rfAnswered.size >= rfAll.length) {
+    endRapid(); return
+  }
+
+  arena.innerHTML = `
+    <div class="rf-header">
+      <div class="rf-timer" id="rfTimer">${rfTimeLeft}</div>
+      <div class="rf-score" id="rfScoreDisplay">✅ ${rfCorrect} &nbsp; ❌ ${rfWrong}</div>
+      <div class="rf-combo" id="rfComboDisplay">${rfCombo >= 3 ? "🔥 " + rfCombo + "x combo" : ""}</div>
+    </div>
+    <div class="rf-progress">
+      <div class="rf-progress-fill" id="rfProgressFill" style="width:${(rfTimeLeft/RF_DIFF[rfDiff].time)*100}%"></div>
+    </div>
+    <div class="rf-word-list" id="rfWordList"></div>
+  `
+
+  active.forEach(word => renderRapidRow(word))
+}
+
+function renderRapidRow(word) {
+  const list = document.getElementById("rfWordList")
+  if (!list) return
+
+  // Pick one wrong answer
+  const wrong = shuffle(rfAll.filter(w => w.en !== word.en))[0]
+  const opts  = shuffle([word.en, wrong.en])
+
+  const row = document.createElement("div")
+  row.className   = "rf-row"
+  row.id          = "rf-row-" + word.id
+  row.innerHTML   = `
+    <div class="rf-jp">${word.jp}</div>
+    <div class="rf-options">
+      <button class="rf-opt" onclick="handleRapid(this, '${word.id}', '${escJs(opts[0])}', '${escJs(word.en)}')">${opts[0]}</button>
+      <button class="rf-opt" onclick="handleRapid(this, '${word.id}', '${escJs(opts[1])}', '${escJs(word.en)}')">${opts[1]}</button>
+    </div>
+    <div class="rf-check" id="rf-check-${word.id}"></div>
+  `
+  list.appendChild(row)
+}
+
+function handleRapid(btn, wordIdStr, chosen, correct) {
+  const wordId = parseInt(wordIdStr)
+  if (rfAnswered.has(wordId)) return
+  if (!rfRunning) return
+
+  const row     = document.getElementById("rf-row-" + wordId)
+  const checkEl = document.getElementById("rf-check-" + wordId)
+  const isCorrect = chosen === correct
+
+  // Disable all buttons in this row
+  row.querySelectorAll(".rf-opt").forEach(b => {
+    b.onclick = null
+    if (b.textContent === correct) b.classList.add("correct")
+  })
+
+  if (isCorrect) {
+    btn.classList.add("correct")
+    row.classList.add("answered-correct")
+    checkEl.textContent = "✅"
+    rfCorrect++
+    rfCombo++
+    rfMaxCombo = Math.max(rfMaxCombo, rfCombo)
+    rfScore += rfCombo >= 5 ? 20 : rfCombo >= 3 ? 15 : 10
+  } else {
+    btn.classList.add("wrong")
+    row.classList.add("answered-wrong")
+    checkEl.textContent = "❌"
+    rfWrong++
+    rfCombo = 0
+    rfScore = Math.max(0, rfScore - 5)
+  }
+
+  rfAnswered.add(wordId)
+  recordAnswer(wordId, isCorrect)
+
+  // Update score display
+  const scoreEl = document.getElementById("rfScoreDisplay")
+  const comboEl = document.getElementById("rfComboDisplay")
+  if (scoreEl) scoreEl.innerHTML = `✅ ${rfCorrect} &nbsp; ❌ ${rfWrong}`
+  if (comboEl) comboEl.textContent = rfCombo >= 3 ? "🔥 " + rfCombo + "x combo" : ""
+
+  // After short delay, remove row and add next word
+  setTimeout(() => {
+    if (!rfRunning) return
+    if (row) row.remove()
+
+    // Add next unanswered word
+    const next = rfWords.find(w => !rfAnswered.has(w.id))
+    if (next) {
+      renderRapidRow(next)
+    } else if (document.getElementById("rfWordList") &&
+               document.getElementById("rfWordList").children.length === 0) {
+      endRapid()
+    }
+  }, 600)
+}
+
+function endRapid() {
+  clearInterval(rfTimer)
+  rfRunning = false
+
+  const total   = rfCorrect + rfWrong
+  const accuracy= total > 0 ? Math.round((rfCorrect / total) * 100) : 0
+
+  document.getElementById("rapidArena").innerHTML = `
+    <div class="rf-result-screen">
+      <div class="rf-result-title">${accuracy >= 80 ? "🎉 Excellent!" : accuracy >= 60 ? "👍 Good job!" : "💪 Keep practicing!"}</div>
+      <div class="rf-result-sub">Here's how you did</div>
+      <div class="rf-stats-grid">
+        <div class="rf-stat-box">
+          <div class="rf-stat-num" style="color:var(--accent)">${rfScore}</div>
+          <div class="rf-stat-label">Score</div>
+        </div>
+        <div class="rf-stat-box">
+          <div class="rf-stat-num" style="color:var(--green)">${rfCorrect}</div>
+          <div class="rf-stat-label">Correct</div>
+        </div>
+        <div class="rf-stat-box">
+          <div class="rf-stat-num" style="color:var(--red)">${rfWrong}</div>
+          <div class="rf-stat-label">Wrong</div>
+        </div>
+        <div class="rf-stat-box">
+          <div class="rf-stat-num">${accuracy}%</div>
+          <div class="rf-stat-label">Accuracy</div>
+        </div>
+        <div class="rf-stat-box">
+          <div class="rf-stat-num" style="color:var(--accent2)">${rfMaxCombo}</div>
+          <div class="rf-stat-label">Max Combo</div>
+        </div>
+        <div class="rf-stat-box">
+          <div class="rf-stat-num">${total}</div>
+          <div class="rf-stat-label">Answered</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="startRapid()" style="margin-right:10px">Play Again</button>
+      <button class="btn btn-ghost"   onclick="setDiff('normal');showPanel('rapid')">Change Difficulty</button>
+    </div>
+  `
+}
+
+function escJs(str) {
+  return String(str).replace(/'/g, "\'").replace(/"/g, '\"')
 }
 
 /* ── MOBILE SIDEBAR ── */
