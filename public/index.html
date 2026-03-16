@@ -1157,6 +1157,191 @@ textarea { resize: vertical; min-height: 120px; }
   font-weight: 600;
 }
 
+
+/* ══════════════════════════
+   AI SENSEI
+══════════════════════════ */
+.ai-sentence-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 32px 24px;
+  text-align: center;
+  margin-bottom: 20px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ai-sentence {
+  font-family: var(--font-jp);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.ai-hint {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.ai-input-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.ai-input-row input {
+  margin: 0;
+  flex: 1;
+  font-size: 15px;
+}
+
+.ai-result-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  animation: fadeUp 0.3s ease;
+}
+
+.ai-result-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ai-score-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ai-score-circle.high { background: rgba(61,220,132,0.15); color: var(--green); border: 2px solid var(--green); }
+.ai-score-circle.mid  { background: rgba(232,197,71,0.15);  color: var(--accent); border: 2px solid var(--accent); }
+.ai-score-circle.low  { background: rgba(255,77,77,0.12);   color: var(--red);    border: 2px solid var(--red); }
+
+.ai-result-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ai-result-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.ai-detail-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.ai-detail-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 80px;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+
+.ai-detail-value {
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.ai-tip-box {
+  background: rgba(124,107,255,0.08);
+  border: 1px solid rgba(124,107,255,0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #a89fff;
+  margin-top: 8px;
+}
+
+.ai-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.ai-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent2);
+  animation: dotBounce 0.6s infinite alternate;
+}
+.ai-dot:nth-child(2) { animation-delay: 0.2s; }
+.ai-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotBounce {
+  from { transform: translateY(0); opacity: 0.4; }
+  to   { transform: translateY(-6px); opacity: 1; }
+}
+
+.ai-stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.ai-stat {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+}
+
+.ai-stat-num {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ai-stat-lbl {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+  .ai-sentence { font-size: 24px; }
+  .ai-input-row { flex-direction: column; }
+  .ai-input-row input { width: 100%; }
+}
+
 </style>
 </head>
 <body>
@@ -1176,7 +1361,7 @@ textarea { resize: vertical; min-height: 120px; }
 
     <div class="login-divider">or</div>
     <button class="btn-guest" onclick="playAsGuest()">▶ Play as Guest</button>
-    <div class="login-credit">Designed &amp; Developed by <span>Omkar Powar</span></div>
+    <div class="login-credit">Designed &amp; Developed by <span>Omkar</span></div>
   </div>
 </div>
 
@@ -1215,6 +1400,9 @@ textarea { resize: vertical; min-height: 120px; }
       <button class="nav-btn" onclick="showPanel('drive')" id="nav-drive">
         <span class="nav-icon">🚗</span> Drive Game
       </button>
+      <button class="nav-btn" onclick="showPanel('aisensei')" id="nav-aisensei">
+        <span class="nav-icon">🤖</span> AI Sensei
+      </button>
     </div>
 
     <!-- ADMIN NAV -->
@@ -1244,6 +1432,9 @@ textarea { resize: vertical; min-height: 120px; }
       </button>
       <button class="nav-btn" onclick="showPanel('drive')" id="nav-drive2">
         <span class="nav-icon">🚗</span> Drive Game
+      </button>
+      <button class="nav-btn" onclick="showPanel('aisensei')" id="nav-aisensei2">
+        <span class="nav-icon">🤖</span> AI Sensei
       </button>
     </div>
 
@@ -1539,6 +1730,49 @@ textarea { resize: vertical; min-height: 120px; }
       </div>
     </div>
 
+
+    <!-- ── AI SENSEI PANEL ── -->
+    <div class="panel" id="panel-aisensei">
+      <div class="page-header">
+        <div class="page-title">AI Sensei 🤖</div>
+        <div class="page-sub">AI generates sentences from your vocab — you translate them</div>
+      </div>
+
+      <div class="card">
+        <div class="game-setup" style="margin-bottom:16px">
+          <select id="aiChapter"></select>
+          <button class="btn btn-purple" onclick="aiGenerate()">Generate Sentence</button>
+        </div>
+
+        <div class="ai-stats-row">
+          <div class="ai-stat">
+            <div class="ai-stat-num" id="aiTotal">0</div>
+            <div class="ai-stat-lbl">Attempted</div>
+          </div>
+          <div class="ai-stat">
+            <div class="ai-stat-num" id="aiCorrect" style="color:var(--green)">0</div>
+            <div class="ai-stat-lbl">Correct</div>
+          </div>
+          <div class="ai-stat">
+            <div class="ai-stat-num" id="aiAvgScore">-</div>
+            <div class="ai-stat-lbl">Avg Score</div>
+          </div>
+        </div>
+
+        <div class="ai-sentence-box" id="aiSentenceBox">
+          <div class="ai-sentence" id="aiSentence">-</div>
+          <div class="ai-hint" id="aiHint">Select a chapter and press Generate Sentence</div>
+        </div>
+
+        <div class="ai-input-row">
+          <input id="aiAnswer" placeholder="Type your English translation here..." autocomplete="off" onkeypress="if(event.key==='Enter') aiCheck()">
+          <button class="btn btn-primary" onclick="aiCheck()">Check</button>
+        </div>
+
+        <div id="aiResultBox"></div>
+      </div>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /appShell -->
 
@@ -1642,7 +1876,7 @@ function loadAllChapters() {
     .then(r => r.json())
     .then(data => {
       const selects = [
-        "mcqChapter","typingChapter","flashChapter","matchChapter","rapidChapter","driveChapter",
+        "mcqChapter","typingChapter","flashChapter","matchChapter","rapidChapter","driveChapter","aiChapter",
         "adminWordChapter","bulkChapter","viewChapter","statsChapter"
       ]
       selects.forEach(id => {
@@ -2802,6 +3036,138 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   lines.push(line)
   const startY = y - ((lines.length - 1) * lineHeight) / 2
   lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineHeight))
+}
+
+
+/* ══════════════════════════════════════════════════
+   AI SENSEI
+══════════════════════════════════════════════════ */
+let aiCurrentSentence = ""
+let aiCurrentWords    = []
+let aiSessionTotal    = 0
+let aiSessionCorrect  = 0
+let aiSessionScoreSum = 0
+let aiChecking        = false
+
+function aiGenerate() {
+  const chapter = document.getElementById("aiChapter").value
+  if (!chapter) return
+
+  // Get words for this chapter first
+  fetch("/words/" + encodeURIComponent(chapter))
+    .then(r => r.json())
+    .then(data => {
+      if (!data.length) { alert("No words in this chapter."); return }
+      aiCurrentWords = data.map(w => ({ jp: w.japanese, en: w.english }))
+
+      // Show loading
+      document.getElementById("aiSentenceBox").innerHTML = `
+        <div class="ai-loading">
+          <div class="ai-dot"></div>
+          <div class="ai-dot"></div>
+          <div class="ai-dot"></div>
+          <span>Sensei is thinking...</span>
+        </div>
+      `
+      document.getElementById("aiResultBox").innerHTML = ""
+      document.getElementById("aiAnswer").value = ""
+
+      return fetch("/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ words: aiCurrentWords })
+      })
+    })
+    .then(r => r && r.json())
+    .then(data => {
+      if (!data || data.error) {
+        document.getElementById("aiSentenceBox").innerHTML = `<div class="ai-hint" style="color:var(--red)">⚠ ${data?.error || "Error generating sentence"}</div>`
+        return
+      }
+      aiCurrentSentence = data.sentence
+      document.getElementById("aiSentenceBox").innerHTML = `
+        <div class="ai-sentence" id="aiSentence">${data.sentence}</div>
+        <div class="ai-hint" id="aiHint">💡 ${data.hint || "Translate this sentence into English"}</div>
+      `
+      document.getElementById("aiAnswer").focus()
+    })
+    .catch(e => {
+      document.getElementById("aiSentenceBox").innerHTML = `<div class="ai-hint" style="color:var(--red)">⚠ Connection error</div>`
+    })
+}
+
+function aiCheck() {
+  if (aiChecking) return
+  const answer = document.getElementById("aiAnswer").value.trim()
+  if (!answer) return
+  if (!aiCurrentSentence) { alert("Generate a sentence first!"); return }
+
+  aiChecking = true
+  document.getElementById("aiResultBox").innerHTML = `
+    <div class="ai-loading">
+      <div class="ai-dot"></div>
+      <div class="ai-dot"></div>
+      <div class="ai-dot"></div>
+      <span>Sensei is checking...</span>
+    </div>
+  `
+
+  fetch("/ai/check", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sentence: aiCurrentSentence, userTranslation: answer })
+  })
+  .then(r => r.json())
+  .then(data => {
+    aiChecking = false
+    if (data.error) {
+      document.getElementById("aiResultBox").innerHTML = `<div class="ai-hint" style="color:var(--red)">⚠ ${data.error}</div>`
+      return
+    }
+
+    const score    = data.score || 0
+    const correct  = data.correct || score >= 7
+    const scoreClass = score >= 8 ? "high" : score >= 5 ? "mid" : "low"
+    const emoji      = score >= 8 ? "🎉" : score >= 5 ? "👍" : "💪"
+    const title      = score >= 8 ? "Excellent!" : score >= 5 ? "Good try!" : "Keep practicing!"
+
+    // Update session stats
+    aiSessionTotal++
+    aiSessionScoreSum += score
+    if (correct) aiSessionCorrect++
+    document.getElementById("aiTotal").textContent   = aiSessionTotal
+    document.getElementById("aiCorrect").textContent = aiSessionCorrect
+    document.getElementById("aiAvgScore").textContent = (aiSessionScoreSum / aiSessionTotal).toFixed(1)
+
+    document.getElementById("aiResultBox").innerHTML = `
+      <div class="ai-result-box">
+        <div class="ai-result-header">
+          <div class="ai-score-circle ${scoreClass}">${score}/10</div>
+          <div>
+            <div class="ai-result-title">${emoji} ${title}</div>
+            <div class="ai-result-sub">${data.feedback || ""}</div>
+          </div>
+        </div>
+        <div class="ai-detail-row">
+          <div class="ai-detail-label">Your answer</div>
+          <div class="ai-detail-value" style="color:${correct ? 'var(--green)' : 'var(--red)'}">${esc(answer)}</div>
+        </div>
+        <div class="ai-detail-row">
+          <div class="ai-detail-label">Best answer</div>
+          <div class="ai-detail-value">${esc(data.correct_translation || "")}</div>
+        </div>
+        ${data.tip ? `<div class="ai-tip-box">💡 ${esc(data.tip)}</div>` : ""}
+        <div style="margin-top:16px">
+          <button class="btn btn-purple" onclick="aiGenerate()" style="margin-right:8px">Next Sentence</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('aiAnswer').value='';document.getElementById('aiResultBox').innerHTML='';document.getElementById('aiAnswer').focus()">Try Again</button>
+        </div>
+      </div>
+    `
+  })
+  .catch(e => {
+    aiChecking = false
+    document.getElementById("aiResultBox").innerHTML = `<div class="ai-hint" style="color:var(--red)">⚠ Connection error</div>`
+  })
 }
 
 /* ── MOBILE SIDEBAR ── */
