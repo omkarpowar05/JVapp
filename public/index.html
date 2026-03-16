@@ -1039,6 +1039,108 @@ textarea { resize: vertical; min-height: 120px; }
   .rf-stats-grid { grid-template-columns: repeat(3,1fr); }
 }
 
+
+/* ══════════════════════════
+   DRIVE GAME
+══════════════════════════ */
+#driveCanvas {
+  display: block;
+  margin: 0 auto;
+  border-radius: 12px;
+  max-width: 100%;
+}
+
+.drive-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13,13,15,0.85);
+  border-radius: 12px;
+  z-index: 10;
+}
+
+.drive-overlay-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.drive-overlay-sub {
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.drive-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.drive-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 4px;
+  max-width: 480px;
+  margin: 0 auto 8px;
+}
+
+.drive-hud-item {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.drive-hud-item span {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.drive-lives {
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+.drive-tap-btns {
+  display: flex;
+  gap: 12px;
+  max-width: 480px;
+  margin: 12px auto 0;
+}
+
+.drive-tap-btn {
+  flex: 1;
+  padding: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-ui);
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.1s;
+  text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.drive-tap-btn:active {
+  transform: scale(0.96);
+  background: var(--surface);
+}
+
+.drive-tap-btn.left-btn  { border-color: #7c6bff; color: #7c6bff; }
+.drive-tap-btn.right-btn { border-color: var(--accent); color: var(--accent); }
+
 </style>
 </head>
 <body>
@@ -1093,6 +1195,9 @@ textarea { resize: vertical; min-height: 120px; }
       <button class="nav-btn" onclick="showPanel('rapid')" id="nav-rapid">
         <span class="nav-icon">⚡</span> Rapid Fire
       </button>
+      <button class="nav-btn" onclick="showPanel('drive')" id="nav-drive">
+        <span class="nav-icon">🚗</span> Drive Game
+      </button>
     </div>
 
     <!-- ADMIN NAV -->
@@ -1119,6 +1224,9 @@ textarea { resize: vertical; min-height: 120px; }
       </button>
       <button class="nav-btn" onclick="showPanel('rapid')" id="nav-rapid2">
         <span class="nav-icon">⚡</span> Rapid Fire
+      </button>
+      <button class="nav-btn" onclick="showPanel('drive')" id="nav-drive2">
+        <span class="nav-icon">🚗</span> Drive Game
       </button>
     </div>
 
@@ -1377,6 +1485,43 @@ textarea { resize: vertical; min-height: 120px; }
       </div>
     </div>
 
+
+    <!-- ── DRIVE GAME PANEL ── -->
+    <div class="panel" id="panel-drive">
+      <div class="page-header">
+        <div class="page-title">Drive Game 🚗</div>
+        <div class="page-sub">Steer toward the correct answer — avoid wrong lanes!</div>
+      </div>
+
+      <div class="card" style="padding:16px">
+        <div class="game-setup" style="margin-bottom:14px">
+          <select id="driveChapter"></select>
+          <button class="btn btn-primary" onclick="startDrive()">Start</button>
+          <button class="btn btn-ghost"   onclick="stopDrive()">End</button>
+        </div>
+
+        <div class="drive-hud">
+          <div class="drive-hud-item">Score <span id="driveScore">0</span></div>
+          <div class="drive-hud-item drive-lives" id="driveLives">❤️❤️❤️</div>
+          <div class="drive-hud-item">Speed <span id="driveSpeedLabel">1x</span></div>
+        </div>
+
+        <div class="drive-wrap">
+          <canvas id="driveCanvas" width="480" height="520"></canvas>
+          <div class="drive-overlay" id="driveOverlay">
+            <div class="drive-overlay-title">🚗 Drive Game</div>
+            <div class="drive-overlay-sub">Steer your car into the correct answer lane.<br>Use ← → arrow keys or tap buttons below.</div>
+            <button class="btn btn-primary" onclick="startDrive()">Start Driving</button>
+          </div>
+        </div>
+
+        <div class="drive-tap-btns">
+          <button class="drive-tap-btn left-btn"  id="driveBtnLeft"  onpointerdown="driveInput('left')"  onpointerup="driveInputRelease()">◀ LEFT</button>
+          <button class="drive-tap-btn right-btn" id="driveBtnRight" onpointerdown="driveInput('right')" onpointerup="driveInputRelease()">RIGHT ▶</button>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /appShell -->
 
@@ -1480,7 +1625,7 @@ function loadAllChapters() {
     .then(r => r.json())
     .then(data => {
       const selects = [
-        "mcqChapter","typingChapter","flashChapter","matchChapter","rapidChapter",
+        "mcqChapter","typingChapter","flashChapter","matchChapter","rapidChapter","driveChapter",
         "adminWordChapter","bulkChapter","viewChapter","statsChapter"
       ]
       selects.forEach(id => {
@@ -2269,6 +2414,377 @@ function endRapid() {
 
 function escJs(str) {
   return String(str).replace(/'/g, "\'").replace(/"/g, '\"')
+}
+
+
+/* ══════════════════════════════════════════════════
+   DRIVE GAME
+══════════════════════════════════════════════════ */
+let driveWords       = []
+let driveAll         = []
+let driveRunning     = false
+let driveScore       = 0
+let driveLives       = 3
+let driveSpeed       = 2
+let driveAnimFrame   = null
+let driveCurrent     = null
+let driveLeftAnswer  = ""
+let driveRightAnswer = ""
+let driveCorrectSide = ""
+let driveInput_dir   = null
+let driveAnswered    = false
+let driveFlashTimer  = 0
+let driveFlashColor  = ""
+let driveRoadOffset  = 0
+let driveDotOffset   = 0
+
+// Car state
+let carX = 240
+let carY = 400
+let carTargetX = 240
+const CAR_SPEED = 6
+const CANVAS_W  = 480
+const CANVAS_H  = 520
+const LANE_L    = 120
+const LANE_R    = 360
+
+function startDrive() {
+  const chapter = document.getElementById("driveChapter").value
+  fetch("/words/" + encodeURIComponent(chapter))
+    .then(r => r.json())
+    .then(data => {
+      if (data.length < 4) { alert("Need at least 4 words."); return }
+      driveAll     = data.map(w => ({ id: w.id, jp: w.japanese, en: w.english }))
+      driveWords   = shuffle([...driveAll])
+      driveScore   = 0
+      driveLives   = 3
+      driveSpeed   = 2
+      driveRunning = true
+      carX         = CANVAS_W / 2
+      carTargetX   = CANVAS_W / 2
+
+      document.getElementById("driveOverlay").style.display = "none"
+      updateDriveHUD()
+      nextDriveWord()
+      cancelAnimationFrame(driveAnimFrame)
+      driveLoop()
+    })
+}
+
+function stopDrive() {
+  driveRunning = false
+  cancelAnimationFrame(driveAnimFrame)
+  document.getElementById("driveOverlay").style.display = "flex"
+  document.getElementById("driveOverlay").innerHTML = `
+    <div class="drive-overlay-title">Game Over</div>
+    <div class="drive-overlay-sub">Score: ${driveScore}</div>
+    <button class="btn btn-primary" onclick="startDrive()" style="margin-right:10px">Play Again</button>
+    <button class="btn btn-ghost" onclick="document.getElementById('driveOverlay').style.display='flex'" style="margin-top:10px">Back</button>
+  `
+}
+
+function nextDriveWord() {
+  if (driveWords.length === 0) driveWords = shuffle([...driveAll])
+  driveCurrent  = driveWords.pop()
+  driveAnswered = false
+
+  const wrong = shuffle(driveAll.filter(w => w.en !== driveCurrent.en))[0]
+  const side  = Math.random() < 0.5 ? "left" : "right"
+  driveCorrectSide = side
+
+  if (side === "left") {
+    driveLeftAnswer  = driveCurrent.en
+    driveRightAnswer = wrong.en
+  } else {
+    driveRightAnswer = driveCurrent.en
+    driveLeftAnswer  = wrong.en
+  }
+
+  driveFlashTimer = 0
+  driveFlashColor = ""
+}
+
+function driveInput(dir) {
+  driveInput_dir = dir
+  if (dir === "left")  carTargetX = LANE_L
+  if (dir === "right") carTargetX = LANE_R
+}
+
+function driveInputRelease() {
+  driveInput_dir = null
+}
+
+function updateDriveHUD() {
+  document.getElementById("driveScore").textContent = driveScore
+  document.getElementById("driveLives").textContent = "❤️".repeat(driveLives) + "🖤".repeat(Math.max(0, 3 - driveLives))
+  document.getElementById("driveSpeedLabel").textContent = driveSpeed.toFixed(1) + "x"
+}
+
+// Keyboard controls
+document.addEventListener("keydown", e => {
+  if (!driveRunning) return
+  if (e.key === "ArrowLeft")  { driveInput("left");  e.preventDefault() }
+  if (e.key === "ArrowRight") { driveInput("right"); e.preventDefault() }
+})
+document.addEventListener("keyup", e => {
+  if (e.key === "ArrowLeft" || e.key === "ArrowRight") driveInputRelease()
+})
+
+function driveLoop() {
+  if (!driveRunning) return
+  driveAnimFrame = requestAnimationFrame(driveLoop)
+
+  const canvas = document.getElementById("driveCanvas")
+  if (!canvas) return
+  const ctx = canvas.getContext("2d")
+
+  // Responsive canvas
+  const rect  = canvas.getBoundingClientRect()
+  const scale = canvas.width / 480
+
+  // Move car toward target
+  const dx = carTargetX - carX
+  carX += dx * 0.12
+
+  // Scroll road
+  driveRoadOffset  = (driveRoadOffset + driveSpeed) % 40
+  driveDotOffset   = (driveDotOffset  + driveSpeed) % 80
+
+  // Flash timer
+  if (driveFlashTimer > 0) driveFlashTimer--
+
+  // Check if car reached a lane
+  if (!driveAnswered) {
+    if (carX < LANE_L + 20 && Math.abs(carX - LANE_L) < 30) checkDriveAnswer("left")
+    if (carX > LANE_R - 20 && Math.abs(carX - LANE_R) < 30) checkDriveAnswer("right")
+  }
+
+  drawDrive(ctx)
+}
+
+function checkDriveAnswer(side) {
+  if (driveAnswered) return
+  driveAnswered = true
+
+  const isCorrect = side === driveCorrectSide
+  recordAnswer(driveCurrent.id, isCorrect)
+
+  if (isCorrect) {
+    driveScore++
+    driveFlashColor = "#3ddc84"
+    if (driveScore % 5 === 0) {
+      driveSpeed = Math.min(driveSpeed + 0.3, 6)
+    }
+  } else {
+    driveLives--
+    driveFlashColor = "#ff4d4d"
+    if (driveLives <= 0) {
+      setTimeout(() => stopDrive(), 600)
+      return
+    }
+  }
+
+  driveFlashTimer = 20
+  updateDriveHUD()
+  carTargetX = CANVAS_W / 2
+  setTimeout(nextDriveWord, 800)
+}
+
+function drawDrive(ctx) {
+  const W = CANVAS_W, H = CANVAS_H
+
+  // Background
+  ctx.fillStyle = "#0d0d0f"
+  ctx.fillRect(0, 0, W, H)
+
+  // Flash overlay
+  if (driveFlashTimer > 0) {
+    ctx.fillStyle = driveFlashColor + "22"
+    ctx.fillRect(0, 0, W, H)
+  }
+
+  // Road
+  ctx.fillStyle = "#1a1a20"
+  ctx.fillRect(60, 0, W - 120, H)
+
+  // Road edges
+  ctx.strokeStyle = "#2a2a35"
+  ctx.lineWidth   = 3
+  ctx.beginPath(); ctx.moveTo(60, 0);     ctx.lineTo(60, H);     ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(W-60, 0);   ctx.lineTo(W-60, H);   ctx.stroke()
+
+  // Center dashes
+  ctx.strokeStyle = "#333340"
+  ctx.lineWidth   = 2
+  ctx.setLineDash([30, 20])
+  ctx.beginPath()
+  ctx.moveTo(W/2, -driveRoadOffset)
+  ctx.lineTo(W/2, H)
+  ctx.stroke()
+  ctx.setLineDash([])
+
+  // Lane dividers (light dots on sides)
+  for (let y = -driveDotOffset; y < H + 80; y += 80) {
+    ctx.fillStyle = "#25252f"
+    ctx.beginPath(); ctx.arc(120, y, 4, 0, Math.PI*2); ctx.fill()
+    ctx.beginPath(); ctx.arc(W-120, y, 4, 0, Math.PI*2); ctx.fill()
+  }
+
+  // Answer boxes
+  drawAnswerBox(ctx, LANE_L, 180, driveLeftAnswer,  driveCorrectSide === "left")
+  drawAnswerBox(ctx, LANE_R, 180, driveRightAnswer, driveCorrectSide === "right")
+
+  // Question word
+  if (driveCurrent) {
+    // Word box
+    ctx.fillStyle = "rgba(28,28,33,0.95)"
+    roundRect(ctx, W/2 - 150, 30, 300, 70, 12)
+    ctx.fill()
+    ctx.strokeStyle = "#2a2a3a"
+    ctx.lineWidth   = 1
+    roundRect(ctx, W/2 - 150, 30, 300, 70, 12)
+    ctx.stroke()
+
+    ctx.fillStyle   = "#e8e8ec"
+    ctx.font        = "bold 28px 'Noto Serif JP', serif"
+    ctx.textAlign   = "center"
+    ctx.textBaseline= "middle"
+    ctx.fillText(driveCurrent.jp, W/2, 65)
+  }
+
+  // Car body
+  drawCar(ctx, carX, carY)
+
+  // Speed lines when fast
+  if (driveSpeed > 3) {
+    ctx.strokeStyle = "rgba(232,197,71,0.15)"
+    ctx.lineWidth   = 1
+    for (let i = 0; i < 5; i++) {
+      const lx = 70 + Math.random() * (W - 140)
+      ctx.beginPath()
+      ctx.moveTo(lx, carY - 30)
+      ctx.lineTo(lx, carY - 30 - driveSpeed * 8)
+      ctx.stroke()
+    }
+  }
+}
+
+function drawAnswerBox(ctx, cx, cy, text, isCorrect) {
+  const W = 140, H = 54
+  const x = cx - W/2, y = cy - H/2
+
+  // Glow if car nearby
+  const dist = Math.abs(carX - cx)
+  if (dist < 80) {
+    ctx.shadowBlur  = 15
+    ctx.shadowColor = isCorrect ? "#3ddc84" : "#ff4d4d"
+  }
+
+  ctx.fillStyle   = "rgba(28,28,33,0.9)"
+  roundRect(ctx, x, y, W, H, 10)
+  ctx.fill()
+  ctx.strokeStyle = dist < 80 ? (isCorrect ? "#3ddc84" : "#ff4d4d") : "#2a2a3a"
+  ctx.lineWidth   = dist < 80 ? 2 : 1
+  roundRect(ctx, x, y, W, H, 10)
+  ctx.stroke()
+  ctx.shadowBlur  = 0
+
+  // Text
+  ctx.fillStyle   = "#e8e8ec"
+  ctx.font        = "600 13px Syne, Arial"
+  ctx.textAlign   = "center"
+  ctx.textBaseline= "middle"
+
+  // Word wrap if needed
+  const maxW = W - 16
+  wrapText(ctx, text, cx, cy, maxW, 16)
+}
+
+function drawCar(ctx, x, y) {
+  const tilt = (carTargetX - x) * 0.01
+
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.rotate(tilt)
+
+  // Shadow
+  ctx.fillStyle = "rgba(0,0,0,0.3)"
+  ctx.beginPath()
+  ctx.ellipse(0, 32, 30, 10, 0, 0, Math.PI*2)
+  ctx.fill()
+
+  // Body
+  ctx.fillStyle = "#e8c547"
+  roundRect(ctx, -22, -30, 44, 55, 8)
+  ctx.fill()
+
+  // Roof
+  ctx.fillStyle = "#c9a82e"
+  roundRect(ctx, -16, -28, 32, 26, 6)
+  ctx.fill()
+
+  // Windshield
+  ctx.fillStyle = "rgba(13,13,15,0.7)"
+  roundRect(ctx, -12, -24, 24, 16, 4)
+  ctx.fill()
+
+  // Headlights
+  ctx.fillStyle = "#fffbe6"
+  ctx.beginPath(); ctx.ellipse(-14, -28, 5, 4, 0, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse( 14, -28, 5, 4, 0, 0, Math.PI*2); ctx.fill()
+
+  // Tail lights
+  ctx.fillStyle = "#ff4444"
+  ctx.beginPath(); ctx.ellipse(-14, 22, 5, 4, 0, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse( 14, 22, 5, 4, 0, 0, Math.PI*2); ctx.fill()
+
+  // Wheels
+  ctx.fillStyle = "#222"
+  ctx.beginPath(); ctx.ellipse(-22, -10, 7, 10, 0, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse( 22, -10, 7, 10, 0, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse(-22,  14, 7, 10, 0, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse( 22,  14, 7, 10, 0, 0, Math.PI*2); ctx.fill()
+
+  // Wheel shine
+  ctx.fillStyle = "#444"
+  ctx.beginPath(); ctx.ellipse(-22, -10, 3, 5, 0, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse( 22, -10, 3, 5, 0, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse(-22,  14, 3, 5, 0, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse( 22,  14, 3, 5, 0, 0, Math.PI*2); ctx.fill()
+
+  ctx.restore()
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.lineTo(x + w - r, y)
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+  ctx.lineTo(x + w, y + h - r)
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+  ctx.lineTo(x + r, y + h)
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r)
+  ctx.lineTo(x, y + r)
+  ctx.quadraticCurveTo(x, y, x + r, y)
+  ctx.closePath()
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(" ")
+  let line = ""
+  const lines = []
+  for (const word of words) {
+    const test = line ? line + " " + word : word
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line)
+      line = word
+    } else {
+      line = test
+    }
+  }
+  lines.push(line)
+  const startY = y - ((lines.length - 1) * lineHeight) / 2
+  lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineHeight))
 }
 
 /* ── MOBILE SIDEBAR ── */
