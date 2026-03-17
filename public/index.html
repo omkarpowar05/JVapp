@@ -1777,6 +1777,13 @@ textarea { resize: vertical; min-height: 120px; }
           <div class="drive-hud-item drive-lives" id="driveLives">❤️❤️❤️</div>
           <div class="drive-hud-item">Speed <span id="driveSpeedLabel">1x</span></div>
         </div>
+        <div class="game-progress-wrap" id="driveProgressWrap" style="display:none;max-width:480px;margin:0 auto 8px">
+          <div class="game-progress-info">
+            <div class="game-progress-left">Word <span id="driveCurrent">0</span> of <span id="driveTotalWords">0</span></div>
+            <div class="game-progress-right" id="driveRemaining">0 remaining</div>
+          </div>
+          <div class="game-progress-bar"><div class="game-progress-fill" id="driveProgressFill" style="width:0%"></div></div>
+        </div>
 
         <div class="drive-wrap">
           <canvas id="driveCanvas" width="480" height="520"></canvas>
@@ -2760,6 +2767,8 @@ let driveRightAnswer = ""
 let driveCorrectSide = ""
 let driveInput_dir   = null
 let driveAnswered    = false
+let driveAnsweredCount = 0
+let driveTotalCount    = 0
 let driveFlashTimer  = 0
 let driveFlashColor  = ""
 let driveRoadOffset  = 0
@@ -2783,15 +2792,18 @@ function startDrive() {
       if (data.length < 4) { alert("Need at least 4 words."); return }
       driveAll     = data.map(w => ({ id: w.id, jp: w.japanese, en: w.english }))
       driveWords   = shuffle([...driveAll])
-      driveScore   = 0
-      driveLives   = 3
-      driveSpeed   = 2
-      driveRunning = true
-      carX         = CANVAS_W / 2
-      carTargetX   = CANVAS_W / 2
+      driveScore        = 0
+      driveLives        = 3
+      driveSpeed        = 2
+      driveRunning      = true
+      driveAnsweredCount = 0
+      driveTotalCount   = data.length
+      carX              = CANVAS_W / 2
+      carTargetX        = CANVAS_W / 2
 
       document.getElementById("driveOverlay").style.display = "none"
       updateDriveHUD()
+      updateGameProgress("drive", 0, driveTotalCount)
       nextDriveWord()
       cancelAnimationFrame(driveAnimFrame)
       driveLoop()
@@ -2911,8 +2923,10 @@ function checkDriveAnswer(side) {
     }
   }
 
+  driveAnsweredCount++
   driveFlashTimer = 20
   updateDriveHUD()
+  updateGameProgress("drive", driveAnsweredCount, driveTotalCount)
   carTargetX = CANVAS_W / 2
   setTimeout(nextDriveWord, 800)
 }
