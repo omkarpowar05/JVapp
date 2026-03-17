@@ -1342,6 +1342,49 @@ textarea { resize: vertical; min-height: 120px; }
   .ai-input-row input { width: 100%; }
 }
 
+
+/* ── GAME PROGRESS BAR ── */
+.game-progress-wrap {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.game-progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.game-progress-left {
+  font-family: var(--font-mono);
+  color: var(--muted);
+}
+
+.game-progress-left span { color: var(--text); font-weight: 700; }
+
+.game-progress-right {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.game-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.game-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
 </style>
 </head>
 <body>
@@ -1475,6 +1518,13 @@ textarea { resize: vertical; min-height: 120px; }
         </div>
 
         <div class="game-arena">
+          <div class="game-progress-wrap" id="mcqProgressWrap" style="display:none">
+            <div class="game-progress-info">
+              <div class="game-progress-left">Word <span id="mcqCurrent">0</span> of <span id="mcqTotalWords">0</span></div>
+              <div class="game-progress-right" id="mcqRemaining">0 remaining</div>
+            </div>
+            <div class="game-progress-bar"><div class="game-progress-fill" id="mcqProgressFill" style="width:0%"></div></div>
+          </div>
           <div class="word-hint" id="mcqHint">Select a chapter and press Start</div>
           <div class="big-word" id="mcqWord">語彙</div>
           <div class="mcq-options" id="mcqOptions"></div>
@@ -1499,6 +1549,13 @@ textarea { resize: vertical; min-height: 120px; }
         </div>
 
         <div class="game-arena">
+          <div class="game-progress-wrap" id="typProgressWrap" style="display:none">
+            <div class="game-progress-info">
+              <div class="game-progress-left">Word <span id="typCurrent">0</span> of <span id="typTotalWords">0</span></div>
+              <div class="game-progress-right" id="typRemaining">0 remaining</div>
+            </div>
+            <div class="game-progress-bar"><div class="game-progress-fill" id="typProgressFill" style="width:0%"></div></div>
+          </div>
           <div class="word-hint">Type the English meaning and press Enter</div>
           <div class="big-word" id="typingWord">準備完了</div>
           <div class="typing-input-row">
@@ -1526,6 +1583,13 @@ textarea { resize: vertical; min-height: 120px; }
         </div>
 
         <div class="game-arena">
+          <div class="game-progress-wrap" id="flashProgressWrap" style="display:none">
+            <div class="game-progress-info">
+              <div class="game-progress-left">Card <span id="flashCurrentNum">0</span> of <span id="flashTotalWords">0</span></div>
+              <div class="game-progress-right" id="flashRemaining">0 remaining</div>
+            </div>
+            <div class="game-progress-bar"><div class="game-progress-fill" id="flashProgressFill" style="width:0%"></div></div>
+          </div>
           <div class="word-hint" id="flashProgress">Select a chapter and press Start</div>
 
           <div class="flashcard-wrap" onclick="flipCard()" id="flashWrap">
@@ -1786,10 +1850,10 @@ let currentRole = null
 let mcqWords = [], mcqAll = [], mcqCurrent = {}, mcqScore = 0, mcqTotal = 0, mcqRunning = false, mcqEnMode = false
 
 // Typing
-let typWords = [], typCurrent = {}, typScore = 0, typTotal = 0, typRunning = false
+let typWords = [], typCurrent = {}, typScore = 0, typTotal = 0, typRunning = false, typTotalCount = 0
 
 // Flashcard
-let flashWords = [], flashCurrent = {}, flashScore = 0, flashTotal = 0, flashRunning = false, flashFlipped = false
+let flashWords = [], flashCurrent = {}, flashScore = 0, flashTotal = 0, flashRunning = false, flashFlipped = false, flashTotalCount = 0
 
 // Match
 let matchRunning = false, matchSelected = null, matchPairs = [], matchMatched = 0
@@ -2095,6 +2159,7 @@ function startMCQ() {
       mcqScore   = 0; mcqTotal = 0; mcqRunning = true
       document.getElementById("mcqResult").textContent = ""
       document.getElementById("mcqHint").textContent = mcqEnMode ? "English → pick Japanese" : "Japanese → pick English"
+      updateGameProgress("mcq", 0, mcqWords.length)
       nextMCQ()
     })
 }
@@ -2104,6 +2169,8 @@ function nextMCQ() {
   if (!mcqWords.length) { endMCQ(); return }
 
   mcqCurrent = mcqWords.pop()
+  const mcqDone = mcqAll.length - mcqWords.length
+  updateGameProgress("mcq", mcqDone, mcqAll.length)
   const questionText = mcqEnMode ? mcqCurrent.en : mcqCurrent.jp
   document.getElementById("mcqWord").textContent = questionText
 
@@ -2169,8 +2236,9 @@ function startTyping() {
     .then(data => {
       if (!data.length) { alert("No words in this chapter."); return }
       typWords   = shuffle(data.map(w => ({ id: w.id, jp: w.japanese, en: w.english })))
-      typScore   = 0; typTotal = 0; typRunning = true
+      typScore   = 0; typTotal = 0; typRunning = true; typTotalCount = typWords.length
       document.getElementById("typingResult").textContent = ""
+      updateGameProgress("typ", 0, typTotalCount)
       nextTyping()
     })
 }
@@ -2178,6 +2246,7 @@ function startTyping() {
 function nextTyping() {
   if (!typWords.length) { endTyping(); return }
   typCurrent = typWords.pop()
+  updateGameProgress("typ", typTotalCount - typWords.length, typTotalCount)
   document.getElementById("typingWord").textContent  = typCurrent.jp
   document.getElementById("typingAnswer").value      = ""
   document.getElementById("typingAnswer").focus()
@@ -2223,7 +2292,9 @@ function startFlash() {
       if (!data.length) { alert("No words in this chapter."); return }
       flashWords   = shuffle(data.map(w => ({ id: w.id, jp: w.japanese, en: w.english })))
       flashScore   = 0; flashTotal = 0; flashRunning = true
+      flashTotalCount = flashWords.length
       document.getElementById("flashScore").textContent = ""
+      updateGameProgress("flash", 0, flashTotalCount)
       nextFlash()
     })
 }
@@ -2233,14 +2304,18 @@ function nextFlash() {
   flashCurrent = flashWords.pop()
   flashFlipped = false
 
-  document.getElementById("flashCard").classList.remove("flipped")
-  document.getElementById("flashJP").textContent     = flashCurrent.jp
-  document.getElementById("flashEN").textContent     = flashCurrent.en
+  // First hide actions and start unflip animation
   document.getElementById("flashActions").style.display = "none"
   document.getElementById("flashTapHint").style.display = "block"
+  document.getElementById("flashCard").classList.remove("flipped")
 
-  const rem = flashWords.length + 1
-  document.getElementById("flashProgress").textContent = `Card ${flashTotal + 1} of ${flashTotal + rem}`
+  // Wait for flip animation (500ms) to finish BEFORE updating content
+  // This prevents the new answer briefly showing on the back face
+  setTimeout(() => {
+    document.getElementById("flashJP").textContent = flashCurrent.jp
+    document.getElementById("flashEN").textContent = flashCurrent.en
+    updateGameProgress("flash", flashTotal, flashTotalCount)
+  }, 520)
 }
 
 function flipCard() {
@@ -2257,7 +2332,8 @@ function markFlash(correct) {
   if (correct) flashScore++
   recordAnswer(flashCurrent.id, correct)
   document.getElementById("flashScore").textContent = `Score  ${flashScore} / ${flashTotal}`
-  setTimeout(nextFlash, 300)
+  // Small delay then nextFlash — nextFlash itself waits 520ms before updating content
+  setTimeout(nextFlash, 100)
 }
 
 function endFlash() {
@@ -3168,6 +3244,21 @@ function aiCheck() {
     aiChecking = false
     document.getElementById("aiResultBox").innerHTML = `<div class="ai-hint" style="color:var(--red)">⚠ Connection error</div>`
   })
+}
+
+
+function updateGameProgress(gamePrefix, done, total) {
+  const wrap = document.getElementById(gamePrefix + "ProgressWrap")
+  const curr = document.getElementById(gamePrefix + "Current") || document.getElementById(gamePrefix + "CurrentNum")
+  const tot  = document.getElementById(gamePrefix + "TotalWords")
+  const rem  = document.getElementById(gamePrefix + "Remaining")
+  const fill = document.getElementById(gamePrefix + "ProgressFill")
+  if (!wrap) return
+  wrap.style.display = "block"
+  if (curr) curr.textContent = done
+  if (tot)  tot.textContent  = total
+  if (rem)  rem.textContent  = (total - done) + " remaining"
+  if (fill) fill.style.width = total > 0 ? ((done / total) * 100) + "%" : "0%"
 }
 
 /* ── MOBILE SIDEBAR ── */
