@@ -39,8 +39,15 @@ app.get("/debug/chapters", async (req, res) => {
 /* ── CHAPTERS ── */
 app.get("/chapters", async (req, res) => {
   try {
-    const result = await db.execute("SELECT * FROM chapters ORDER BY name")
-    res.json(result.rows)
+    const result = await db.execute("SELECT * FROM chapters")
+    // Natural numeric sort: Chapter 1, Chapter 2, ... Chapter 10, Chapter 11
+    const sorted = result.rows.sort((a, b) => {
+      const numA = parseInt(a.name.replace(/[^0-9]/g, "")) || 0
+      const numB = parseInt(b.name.replace(/[^0-9]/g, "")) || 0
+      if (numA !== numB) return numA - numB
+      return a.name.localeCompare(b.name)
+    })
+    res.json(sorted)
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
