@@ -3198,12 +3198,12 @@ function aiGenerate() {
         return
       }
       aiCurrentSentence = data.sentence
-      const readingHtml = data.reading && data.reading !== data.sentence
-        ? `<div class="ai-reading"><div class="ai-reading-label">Reading</div>${data.reading}</div>`
+      const vocabHtml = data.vocab_used
+        ? `<div class="ai-reading"><div class="ai-reading-label">Vocab used</div>${data.vocab_used}</div>`
         : ""
       document.getElementById("aiSentenceBox").innerHTML = `
         <div class="ai-sentence" id="aiSentence">${data.sentence}</div>
-        ${readingHtml}
+        ${vocabHtml}
         <div class="ai-hint" id="aiHint">💡 ${data.hint || "Translate this sentence into English"}</div>
       `
       document.getElementById("aiAnswer").focus()
