@@ -189,11 +189,19 @@ app.post("/ai/generate", async (req, res) => {
   const picked = words.sort(() => Math.random() - 0.5).slice(0, Math.min(4, words.length))
   const wordList = picked.map(w => `${w.jp} (${w.en})`).join(", ")
 
-  const prompt = `You are a Japanese language teacher for beginners learning from Minna no Nihongo.
-Generate one simple Japanese sentence using some of these vocabulary words: ${wordList}
-The sentence should be beginner level, using hiragana/katakana (no kanji).
+  const prompt = `You are a Japanese language teacher for absolute beginners (JLPT N5) learning from Minna no Nihongo.
+Generate one very simple Japanese sentence using some of these vocabulary words: ${wordList}
+
+STRICT RULES — follow every rule exactly:
+1. Write the sentence TWICE:
+   - "sentence": Write using KANJI where natural (normal written Japanese)
+   - "reading": Write the EXACT same sentence but replace every kanji with hiragana in brackets like this: 食べます(たべます) わたしは 学校(がっこう)に 行きます(いきます)
+2. The reading field must show kanji followed immediately by its hiragana reading in parentheses for EVERY kanji character
+3. Keep grammar simple — N5 level only (は、が、を、に、で、です、ます forms)
+4. "hint": one short English grammar tip about the sentence structure
+
 Reply ONLY in this exact JSON format with no extra text:
-{"sentence": "japanese sentence here", "reading": "hiragana reading if needed", "hint": "one short grammar tip"}`
+{"sentence": "sentence with kanji", "reading": "kanji(reading) mixed format", "hint": "grammar tip"}`
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
