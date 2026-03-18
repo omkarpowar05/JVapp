@@ -185,23 +185,24 @@ app.post("/ai/generate", async (req, res) => {
 
   const GROQ_KEY = process.env.GROQ_API_KEY || "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"
 
-  // Pick 3-5 random words to use in sentence
-  const picked = words.sort(() => Math.random() - 0.5).slice(0, Math.min(4, words.length))
-  const wordList = picked.map(w => `${w.jp} (${w.en})`).join(", ")
+  // Pick 2-3 random words to use — fewer words = more likely AI uses them
+  const picked = words.sort(() => Math.random() - 0.5).slice(0, Math.min(3, words.length))
+  const wordList = picked.map(w => `"${w.jp}"`).join(", ")
+  const wordListWithMeaning = picked.map(w => `${w.jp} = ${w.en}`).join("\n")
 
-  const prompt = `You are a Japanese language teacher for absolute beginners (JLPT N5) learning from Minna no Nihongo.
-Generate one very simple Japanese sentence using some of these vocabulary words: ${wordList}
+  const prompt = `You are a Japanese language teacher. Create ONE simple Japanese sentence for a JLPT N5 beginner.
 
-STRICT RULES — follow every rule exactly:
-1. Write the sentence TWICE:
-   - "sentence": Write using KANJI where natural (normal written Japanese)
-   - "reading": Write the EXACT same sentence but replace every kanji with hiragana in brackets like this: 食べます(たべます) わたしは 学校(がっこう)に 行きます(いきます)
-2. The reading field must show kanji followed immediately by its hiragana reading in parentheses for EVERY kanji character
-3. Keep grammar simple — N5 level only (は、が、を、に、で、です、ます forms)
-4. "hint": one short English grammar tip about the sentence structure
+You MUST use at least one of these exact vocabulary words in the sentence:
+${wordListWithMeaning}
 
-Reply ONLY in this exact JSON format with no extra text:
-{"sentence": "sentence with kanji", "reading": "kanji(reading) mixed format", "hint": "grammar tip"}`
+RULES — you must follow ALL of these:
+- Write ONLY in hiragana and katakana. Do NOT use any kanji at all. Not even one kanji character.
+- Use JLPT N5 grammar only: は、が、を、に、で、です、ます forms
+- The sentence must be short — maximum 10 words
+- The "vocab_used" field must list which word from the list you actually used
+
+Reply ONLY in this exact JSON, no other text:
+{"sentence": "hiragana/katakana only sentence", "vocab_used": "word you used from the list", "hint": "one short English grammar tip"}`
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
