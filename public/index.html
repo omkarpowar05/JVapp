@@ -1385,6 +1385,29 @@ textarea { resize: vertical; min-height: 120px; }
   transition: width 0.4s ease;
 }
 
+
+.ai-reading {
+  font-family: var(--font-jp);
+  font-size: 15px;
+  color: var(--accent2);
+  line-height: 1.8;
+  margin-top: 6px;
+  padding: 8px 14px;
+  background: rgba(124,107,255,0.07);
+  border-radius: 8px;
+  border: 1px solid rgba(124,107,255,0.15);
+  text-align: center;
+}
+
+.ai-reading-label {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+  font-family: var(--font-ui);
+}
+
 </style>
 </head>
 <body>
@@ -3175,8 +3198,12 @@ function aiGenerate() {
         return
       }
       aiCurrentSentence = data.sentence
+      const readingHtml = data.reading && data.reading !== data.sentence
+        ? `<div class="ai-reading"><div class="ai-reading-label">Reading</div>${data.reading}</div>`
+        : ""
       document.getElementById("aiSentenceBox").innerHTML = `
         <div class="ai-sentence" id="aiSentence">${data.sentence}</div>
+        ${readingHtml}
         <div class="ai-hint" id="aiHint">💡 ${data.hint || "Translate this sentence into English"}</div>
       `
       document.getElementById("aiAnswer").focus()
